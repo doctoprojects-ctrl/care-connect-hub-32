@@ -1,10 +1,12 @@
 import { PatientList } from '@/components/patients/PatientList';
 import { Patient } from '@/types';
+import { useNavigate } from 'react-router-dom';
 
 export default function Patients() {
+  const navigate = useNavigate();
+  
   const handlePatientSelect = (patient: Patient) => {
-    console.log('Patient selected:', patient);
-    // TODO: Navigate to patient detail page or open modal
+    navigate(`/patients/${patient.id}`);
   };
 
   const handleAddPatient = () => {

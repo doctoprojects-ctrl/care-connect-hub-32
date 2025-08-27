@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
+import PatientDetail from "./pages/PatientDetail";
 import Appointments from "./pages/Appointments";
 import QRBooking from "./pages/QRBooking";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => {
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/patients" element={<Patients />} />
+                      <Route path="/patients/:id" element={<PatientDetail />} />
                       <Route path="/appointments" element={<Appointments />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
