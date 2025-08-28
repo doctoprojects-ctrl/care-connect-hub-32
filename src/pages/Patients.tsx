@@ -1,22 +1,39 @@
+import { useState } from 'react';
 import { PatientList } from '@/components/patients/PatientList';
+import { PatientForm } from '@/components/forms/PatientForm';
 import { Patient } from '@/types';
 import { useNavigate } from 'react-router-dom';
+import { mockPatients } from '@/store/mockData';
 
 export default function Patients() {
   const navigate = useNavigate();
+  const [showPatientForm, setShowPatientForm] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Patient | undefined>();
   
   const handlePatientSelect = (patient: Patient) => {
     navigate(`/patients/${patient.id}`);
   };
 
   const handleAddPatient = () => {
-    console.log('Add new patient');
-    // TODO: Open add patient form/modal
+    setEditingPatient(undefined);
+    setShowPatientForm(true);
   };
 
   const handleEditPatient = (patient: Patient) => {
-    console.log('Edit patient:', patient);
-    // TODO: Open edit patient form/modal
+    setEditingPatient(patient);
+    setShowPatientForm(true);
+  };
+
+  const handlePatientSubmit = (patient: Patient) => {
+    if (editingPatient) {
+      const index = mockPatients.findIndex(p => p.id === patient.id);
+      if (index !== -1) {
+        mockPatients[index] = patient;
+      }
+    } else {
+      // Add new patient to mock data
+      mockPatients.push(patient);
+    }
   };
 
   return (
@@ -32,6 +49,13 @@ export default function Patients() {
         onPatientSelect={handlePatientSelect}
         onAddPatient={handleAddPatient}
         onEditPatient={handleEditPatient}
+      />
+
+      <PatientForm
+        open={showPatientForm}
+        onOpenChange={setShowPatientForm}
+        onSubmit={handlePatientSubmit}
+        patient={editingPatient}
       />
     </div>
   );

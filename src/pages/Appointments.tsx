@@ -1,15 +1,33 @@
+import { useState } from 'react';
 import { AppointmentCalendar } from '@/components/appointments/AppointmentCalendar';
+import { AppointmentForm } from '@/components/forms/AppointmentForm';
 import { Appointment } from '@/types';
+import { mockAppointments } from '@/store/mockData';
 
 export default function Appointments() {
+  const [showAppointmentForm, setShowAppointmentForm] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | undefined>();
+
   const handleAddAppointment = () => {
-    console.log('Add new appointment');
-    // TODO: Open add appointment form/modal
+    setEditingAppointment(undefined);
+    setShowAppointmentForm(true);
   };
 
   const handleAppointmentSelect = (appointment: Appointment) => {
-    console.log('Appointment selected:', appointment);
-    // TODO: Navigate to appointment detail page or open modal
+    setEditingAppointment(appointment);
+    setShowAppointmentForm(true);
+  };
+
+  const handleAppointmentSubmit = (appointment: Appointment) => {
+    if (editingAppointment) {
+      const index = mockAppointments.findIndex(a => a.id === appointment.id);
+      if (index !== -1) {
+        mockAppointments[index] = appointment;
+      }
+    } else {
+      // Add new appointment to mock data
+      mockAppointments.push(appointment);
+    }
   };
 
   return (
@@ -24,6 +42,13 @@ export default function Appointments() {
       <AppointmentCalendar
         onAddAppointment={handleAddAppointment}
         onAppointmentSelect={handleAppointmentSelect}
+      />
+
+      <AppointmentForm
+        open={showAppointmentForm}
+        onOpenChange={setShowAppointmentForm}
+        onSubmit={handleAppointmentSubmit}
+        appointment={editingAppointment}
       />
     </div>
   );
