@@ -1,4 +1,4 @@
-import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield } from 'lucide-react';
+import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { User, UserRole } from '@/types';
@@ -12,7 +12,6 @@ const navigationItems = {
     { href: '/dashboard', icon: BarChart3, label: 'Dashboard' },
     { href: '/patients', icon: Users, label: 'Patients' },
     { href: '/appointments', icon: Calendar, label: 'Appointments' },
-    { href: '/users', icon: Shield, label: 'User Management' },
     { href: '/doctors', icon: UserCircle, label: 'Doctors' },
     { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
     { href: '/settings', icon: Settings, label: 'Settings' },

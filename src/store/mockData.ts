@@ -4,11 +4,10 @@ import { Patient, Doctor, Appointment, User } from '../types';
 export const mockUsers: User[] = [
   {
     id: '1',
-    firstName: 'Elton',
-    lastName: 'Admin',
-    email: 'elton@clinic.com',
+    firstName: 'Admin',
+    lastName: 'User',
+    email: 'admin@clinic.com',
     role: 'admin',
-    pin: 'E301277',
     isActive: true,
   },
   {
@@ -17,7 +16,6 @@ export const mockUsers: User[] = [
     lastName: 'Johnson',
     email: 'sarah.johnson@clinic.com',
     role: 'doctor',
-    pin: '1234',
     isActive: true,
   },
   {
@@ -26,7 +24,6 @@ export const mockUsers: User[] = [
     lastName: 'Smith',
     email: 'mary.smith@clinic.com',
     role: 'reception',
-    pin: '5678',
     isActive: true,
   },
 ];

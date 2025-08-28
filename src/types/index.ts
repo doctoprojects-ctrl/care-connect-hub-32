@@ -57,7 +57,6 @@ export interface User {
   lastName: string;
   email: string;
   role: 'admin' | 'doctor' | 'reception' | 'patient';
-  pin: string;
   isActive: boolean;
 }
 
