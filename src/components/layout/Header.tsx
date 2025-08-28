@@ -1,19 +1,18 @@
 import { Button } from '@/components/ui/button';
 import { Bell, LogOut } from 'lucide-react';
 import { User } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
   currentUser: User;
-  onRoleSwitch: (role: User['role']) => void;
 }
 
-export function Header({ currentUser, onRoleSwitch }: HeaderProps) {
-  const roles: Array<{ value: User['role']; label: string }> = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'doctor', label: 'Doctor' },
-    { value: 'reception', label: 'Reception' },
-    { value: 'patient', label: 'Patient' },
-  ];
+export function Header({ currentUser }: HeaderProps) {
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header className="bg-background border-b border-border px-6 py-4">
@@ -25,27 +24,21 @@ export function Header({ currentUser, onRoleSwitch }: HeaderProps) {
         </div>
         
         <div className="flex items-center gap-4">
-          {/* Role Switcher for Demo */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Switch Role:</span>
-            <select 
-              value={currentUser.role} 
-              onChange={(e) => onRoleSwitch(e.target.value as User['role'])}
-              className="px-2 py-1 text-sm border border-input rounded bg-background"
-            >
-              {roles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Welcome,</span>
+            <span className="font-medium text-foreground">
+              {currentUser.firstName} {currentUser.lastName}
+            </span>
+            <span className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded">
+              {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
+            </span>
           </div>
           
           <Button variant="ghost" size="icon">
             <Bell className="w-4 h-4" />
           </Button>
           
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="w-4 h-4" />
           </Button>
         </div>
