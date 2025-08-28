@@ -197,7 +197,7 @@ export const UserManagement = () => {
                     type="password"
                     value={formData.pin}
                     onChange={(e) => setFormData(prev => ({ ...prev, pin: e.target.value }))}
-                    placeholder="Enter 4-6 digit PIN"
+                    placeholder="Enter 4-9 digit PIN"
                     required
                     maxLength={6}
                   />
