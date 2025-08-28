@@ -142,12 +142,3 @@ export const mockAppointments: Appointment[] = [
 
 // Current user mock (for role simulation)
 export const mockCurrentUser: User = mockUsers[2]; // Reception user by default
-
-// Unified export for backward compatibility
-export const mockData = {
-  patients: mockPatients,
-  doctors: mockDoctors,
-  appointments: mockAppointments,
-  users: mockUsers,
-  currentUser: mockCurrentUser,
-};
