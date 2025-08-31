@@ -96,7 +96,7 @@ export const PINLogin = () => {
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <div className="space-y-1">
               <p><strong>Demo Users:</strong></p>
-              <p>Admin: Elton (PIN: E301277)</p>
+              <p>Admin: Elton (PIN: 301277)</p>
               <p>Doctor: Sarah (PIN: 1234)</p>
               <p>Reception: Mary (PIN: 5678)</p>
             </div>
