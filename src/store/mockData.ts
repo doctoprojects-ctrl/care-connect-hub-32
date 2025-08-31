@@ -13,7 +13,7 @@ export const mockUsers: User[] = [
   },
   {
     id: '2',
-    firstName: 'Dr. Sarah',
+    firstName: 'Sarah',
     lastName: 'Johnson',
     email: 'sarah.johnson@clinic.com',
     role: 'doctor',
@@ -35,7 +35,7 @@ export const mockUsers: User[] = [
 export const mockDoctors: Doctor[] = [
   {
     id: '2',
-    firstName: 'Dr. Sarah',
+    firstName: 'Sarah',
     lastName: 'Johnson',
     specialization: 'General Medicine',
     email: 'sarah.johnson@clinic.com',

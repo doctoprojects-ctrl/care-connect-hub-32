@@ -78,7 +78,7 @@ export const PINLogin = () => {
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 placeholder="Enter PIN"
-                maxLength={6}
+                maxLength={15}
                 required
                 className="text-center text-2xl tracking-widest"
               />
