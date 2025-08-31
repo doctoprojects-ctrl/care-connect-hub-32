@@ -11,8 +11,8 @@ export default function QRGenerator() {
   const [qrSize, setQrSize] = useState(300);
   const [practiceInfo, setPracticeInfo] = useState({
     name: 'Medical Practice',
-    phone: '+27 65 913 2527',
-    address: '123 Healthcare Bashewa, pretoria, 0524'
+    phone: '+1-555-0123',
+    address: '123 Healthcare Ave, Medical City, MC 12345'
   });
 
   // Get the current domain for the booking URL
