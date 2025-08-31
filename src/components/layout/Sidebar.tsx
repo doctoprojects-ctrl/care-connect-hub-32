@@ -23,6 +23,7 @@ const navigationItems = {
     { href: '/patients', icon: Users, label: 'My Patients' },
   ],
   reception: [
+    { href: '/patients', icon: Users, label: 'Patients' },
     { href: '/appointments', icon: Calendar, label: 'Appointments' },
     { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
   ],
