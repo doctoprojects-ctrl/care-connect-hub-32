@@ -13,6 +13,7 @@ import PatientDetail from "./pages/PatientDetail";
 import Appointments from "./pages/Appointments";
 import Users from "./pages/Users";
 import QRBooking from "./pages/QRBooking";
+import QRGenerator from "./pages/QRGenerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,9 @@ const AppContent = () => {
             <Route path="/appointments" element={<Appointments />} />
             {user?.role === 'admin' && (
               <Route path="/users" element={<Users />} />
+            )}
+            {(user?.role === 'admin' || user?.role === 'reception') && (
+              <Route path="/qr-generator" element={<QRGenerator />} />
             )}
             <Route path="*" element={<NotFound />} />
           </Routes>
