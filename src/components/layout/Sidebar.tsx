@@ -36,6 +36,9 @@ const navigationItems = {
   cashier: [
     { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
   ],
+  supervisor: [
+    { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
+  ],
   patient: [
     { href: '/my-appointments', icon: Calendar, label: 'My Appointments' },
     { href: '/profile', icon: UserCircle, label: 'My Profile' },

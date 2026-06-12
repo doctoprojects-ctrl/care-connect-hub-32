@@ -56,12 +56,12 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'admin' | 'doctor' | 'reception' | 'patient' | 'cashier';
+  role: 'admin' | 'doctor' | 'reception' | 'patient' | 'cashier' | 'supervisor';
   pin: string;
   isActive: boolean;
 }
 
-export type UserRole = 'admin' | 'doctor' | 'reception' | 'patient' | 'cashier';
+export type UserRole = 'admin' | 'doctor' | 'reception' | 'patient' | 'cashier' | 'supervisor';
 
 // ==================== Pharmacy ====================
 export interface PharmacyItem {
