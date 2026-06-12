@@ -45,6 +45,14 @@ export default function Pharmacy() {
 
   const cartTotal = useMemo(() => cart.reduce((s, l) => s + l.quantity * l.unitPrice, 0), [cart]);
 
+  const role = user?.role;
+  const isAdmin = role === 'admin';
+  const isSupervisor = role === 'supervisor';
+  const isCashier = role === 'cashier';
+  const canSell = isAdmin || isCashier;
+  const canManage = isAdmin || isSupervisor; // items, GRV, stock take
+  const defaultTab = canSell ? 'sales' : 'items';
+
   const handleAddItem = () => {
     if (!itemForm.name) return;
     const newItem: PharmacyItem = {
@@ -161,12 +169,12 @@ export default function Pharmacy() {
         <p className="text-muted-foreground">Items, GRV, POS sales and stock take</p>
       </div>
 
-      <Tabs defaultValue="sales">
+      <Tabs defaultValue={defaultTab}>
         <TabsList>
-          <TabsTrigger value="sales">POS Sales</TabsTrigger>
-          <TabsTrigger value="items">Items</TabsTrigger>
-          <TabsTrigger value="grv">GRV (Receive)</TabsTrigger>
-          <TabsTrigger value="stocktake">Stock Take</TabsTrigger>
+          {canSell && <TabsTrigger value="sales">POS Sales</TabsTrigger>}
+          {canManage && <TabsTrigger value="items">Items</TabsTrigger>}
+          {canManage && <TabsTrigger value="grv">GRV (Receive)</TabsTrigger>}
+          {canManage && <TabsTrigger value="stocktake">Stock Take</TabsTrigger>}
           <TabsTrigger value="history">Sales History</TabsTrigger>
         </TabsList>
 

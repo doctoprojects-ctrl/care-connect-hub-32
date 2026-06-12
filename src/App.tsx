@@ -41,7 +41,7 @@ const AppContent = () => {
             <Route path="/patients/:id" element={<PatientDetail />} />
             <Route path="/appointments" element={<Appointments />} />
             <Route path="/calendar" element={<CalendarView />} />
-            {(user?.role === 'admin' || user?.role === 'cashier') && (
+            {(user?.role === 'admin' || user?.role === 'cashier' || user?.role === 'supervisor') && (
               <Route path="/pharmacy" element={<Pharmacy />} />
             )}
             {(user?.role === 'admin' || user?.role === 'doctor') && (

@@ -54,6 +54,17 @@ mockUsers.push({
   isActive: true,
 });
 
+// Add pharmacy supervisor
+mockUsers.push({
+  id: '6',
+  firstName: 'Sam',
+  lastName: 'Supervisor',
+  email: 'sam@clinic.com',
+  role: 'supervisor',
+  pin: '7777',
+  isActive: true,
+});
+
 // ==================== Pharmacy mock ====================
 export const mockPharmacyItems: PharmacyItem[] = [
   { id: 'p1', barcode: '6001234500017', name: 'Paracetamol 500mg (20 tabs)', category: 'Analgesic', unitPrice: 25, stock: 120, reorderLevel: 30, supplier: 'MediSupply', expiryDate: '2027-06-30' },
