@@ -1,4 +1,16 @@
-import { Patient, Doctor, Appointment, User } from '../types';
+import {
+  Patient,
+  Doctor,
+  Appointment,
+  User,
+  PharmacyItem,
+  GoodsReceivedVoucher,
+  Sale,
+  StockTake,
+  Equipment,
+  MaintenanceSchedule,
+  FaultyReport,
+} from '../types';
 
 // Mock Users
 export const mockUsers: User[] = [
@@ -29,6 +41,74 @@ export const mockUsers: User[] = [
     pin: '5678',
     isActive: true,
   },
+];
+
+// Add cashier
+mockUsers.push({
+  id: '5',
+  firstName: 'Cathy',
+  lastName: 'Cashier',
+  email: 'cathy@clinic.com',
+  role: 'cashier',
+  pin: '9999',
+  isActive: true,
+});
+
+// ==================== Pharmacy mock ====================
+export const mockPharmacyItems: PharmacyItem[] = [
+  { id: 'p1', barcode: '6001234500017', name: 'Paracetamol 500mg (20 tabs)', category: 'Analgesic', unitPrice: 25, stock: 120, reorderLevel: 30, supplier: 'MediSupply', expiryDate: '2027-06-30' },
+  { id: 'p2', barcode: '6001234500024', name: 'Amoxicillin 250mg (15 caps)', category: 'Antibiotic', unitPrice: 65, stock: 40, reorderLevel: 20, supplier: 'PharmaCo', expiryDate: '2026-12-15' },
+  { id: 'p3', barcode: '6001234500031', name: 'Ibuprofen 400mg (10 tabs)', category: 'Analgesic', unitPrice: 35, stock: 15, reorderLevel: 25, supplier: 'MediSupply', expiryDate: '2026-09-01' },
+  { id: 'p4', barcode: '6001234500048', name: 'Cough Syrup 100ml', category: 'Cold & Flu', unitPrice: 55, stock: 60, reorderLevel: 15, supplier: 'PharmaCo', expiryDate: '2026-11-20' },
+];
+
+export const mockGRVs: GoodsReceivedVoucher[] = [
+  {
+    id: 'g1',
+    grvNumber: 'GRV-0001',
+    type: 'pharmacy',
+    supplier: 'MediSupply',
+    receivedBy: 'Cathy Cashier',
+    receivedDate: '2026-06-10',
+    status: 'complete',
+    lines: [
+      { itemId: 'p1', quantity: 50, unitCost: 18 },
+      { itemId: 'p3', quantity: 20, unitCost: 25 },
+    ],
+    notes: 'Monthly restock',
+  },
+];
+
+export const mockSales: Sale[] = [
+  {
+    id: 's1',
+    receiptNumber: 'RCP-0001',
+    cashierId: '5',
+    customerName: 'Walk-in',
+    lines: [{ itemId: 'p1', name: 'Paracetamol 500mg (20 tabs)', quantity: 2, unitPrice: 25 }],
+    total: 50,
+    paymentMethod: 'cash',
+    createdAt: '2026-06-11T09:30:00Z',
+  },
+];
+
+export const mockStockTakes: StockTake[] = [];
+
+// ==================== Equipment mock ====================
+export const mockEquipment: Equipment[] = [
+  { id: 'e1', barcode: 'EQ-1000001', name: 'ECG Machine', serialNumber: 'SN-ECG-001', location: 'Consult Room 1', purchaseDate: '2024-03-15', status: 'operational' },
+  { id: 'e2', barcode: 'EQ-1000002', name: 'Defibrillator', serialNumber: 'SN-DEF-002', location: 'Emergency', purchaseDate: '2023-08-01', status: 'maintenance' },
+  { id: 'e3', barcode: 'EQ-1000003', name: 'Blood Pressure Monitor', serialNumber: 'SN-BPM-003', location: 'Reception', purchaseDate: '2025-01-10', status: 'operational' },
+  { id: 'e4', barcode: 'EQ-1000004', name: 'Nebulizer', serialNumber: 'SN-NEB-004', location: 'Consult Room 2', purchaseDate: '2024-09-22', status: 'faulty' },
+];
+
+export const mockMaintenanceSchedules: MaintenanceSchedule[] = [
+  { id: 'm1', equipmentId: 'e1', scheduledDate: '2026-07-01', intervalDays: 90, technician: 'TechServ Ltd', status: 'scheduled' },
+  { id: 'm2', equipmentId: 'e2', scheduledDate: '2026-06-15', intervalDays: 30, technician: 'TechServ Ltd', status: 'in-progress' },
+];
+
+export const mockFaultyReports: FaultyReport[] = [
+  { id: 'f1', equipmentId: 'e4', reportedBy: 'Sarah Johnson', reportedDate: '2026-06-08', description: 'Not powering on', severity: 'high', status: 'open' },
 ];
 
 // Mock Doctors

@@ -1,4 +1,4 @@
-import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield } from 'lucide-react';
+import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield, Pill, Wrench, CalendarDays } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { User, UserRole } from '@/types';
@@ -12,6 +12,9 @@ const navigationItems = {
     { href: '/dashboard', icon: BarChart3, label: 'Dashboard' },
     { href: '/patients', icon: Users, label: 'Patients' },
     { href: '/appointments', icon: Calendar, label: 'Appointments' },
+    { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
+    { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
+    { href: '/equipment', icon: Wrench, label: 'Equipment' },
     { href: '/users', icon: Shield, label: 'User Management' },
     { href: '/doctors', icon: UserCircle, label: 'Doctors' },
     { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
@@ -20,12 +23,18 @@ const navigationItems = {
   doctor: [
     { href: '/dashboard', icon: BarChart3, label: 'Dashboard' },
     { href: '/appointments', icon: Calendar, label: 'My Appointments' },
+    { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
     { href: '/patients', icon: Users, label: 'My Patients' },
+    { href: '/equipment', icon: Wrench, label: 'Equipment' },
   ],
   reception: [
     { href: '/patients', icon: Users, label: 'Patients' },
     { href: '/appointments', icon: Calendar, label: 'Appointments' },
+    { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
     { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
+  ],
+  cashier: [
+    { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
   ],
   patient: [
     { href: '/my-appointments', icon: Calendar, label: 'My Appointments' },
