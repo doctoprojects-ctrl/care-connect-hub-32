@@ -127,6 +127,64 @@ export const mockFaultyReports: FaultyReport[] = [
   { id: 'f1', equipmentId: 'e4', reportedBy: 'Sarah Johnson', reportedDate: '2026-06-08', description: 'Not powering on', severity: 'high', status: 'open' },
 ];
 
+// ==================== Services / Invoices / Credits / CashUps / Consultations ====================
+export const mockServicePrices: ServicePrice[] = [
+  { id: 'sv1', code: 'CONS-GEN', name: 'General Consultation', category: 'Consultation', price: 350, description: 'Standard 30-min consult' },
+  { id: 'sv2', code: 'CONS-FUP', name: 'Follow-up Visit', category: 'Consultation', price: 200 },
+  { id: 'sv3', code: 'PROC-ECG', name: 'ECG', category: 'Procedure', price: 450 },
+  { id: 'sv4', code: 'PROC-NEB', name: 'Nebulization', category: 'Procedure', price: 180 },
+  { id: 'sv5', code: 'LAB-BLD', name: 'Blood Test (CBC)', category: 'Laboratory', price: 280 },
+  { id: 'sv6', code: 'INJ-VAC', name: 'Vaccination', category: 'Procedure', price: 320 },
+];
+
+export const mockInvoices: Invoice[] = [
+  {
+    id: 'inv1', invoiceNumber: 'INV-0001', patientId: '1', patientName: 'John Doe',
+    issuedDate: '2026-06-05', dueDate: '2026-06-20',
+    lines: [
+      { description: 'General Consultation', quantity: 1, unitPrice: 350 },
+      { description: 'ECG', quantity: 1, unitPrice: 450 },
+    ],
+    total: 800, amountPaid: 800, status: 'paid',
+  },
+  {
+    id: 'inv2', invoiceNumber: 'INV-0002', patientId: '2', patientName: 'Alice Wilson',
+    issuedDate: '2026-06-09', dueDate: '2026-06-24',
+    lines: [{ description: 'Follow-up Visit', quantity: 1, unitPrice: 200 }],
+    total: 200, amountPaid: 0, status: 'unpaid',
+  },
+];
+
+export const mockPatientCredits: PatientCredit[] = [
+  { patientId: '2', patientName: 'Alice Wilson', balance: 200, lastUpdated: '2026-06-09' },
+];
+
+export const mockCashUps: CashUp[] = [
+  {
+    id: 'cu1', shiftNumber: 'SH-0001', cashierId: '5', cashierName: 'Cathy Cashier',
+    openedAt: '2026-06-11T08:00:00Z', closedAt: '2026-06-11T17:00:00Z',
+    openingFloat: 500, expectedCash: 1250, expectedCard: 800, expectedMobile: 320,
+    countedCash: 1250, countedCard: 800, countedMobile: 320, variance: 0,
+    notes: 'Balanced',
+  },
+];
+
+export const mockConsultations: ConsultationNote[] = [
+  {
+    id: 'cn1', patientId: '1', doctorId: '2', doctorName: 'Dr. Sarah Johnson',
+    date: '2026-05-15', chiefComplaint: 'Persistent headache',
+    diagnosis: 'Tension headache', treatment: 'Rest, hydration, Paracetamol',
+    prescription: 'Paracetamol 500mg every 6h for 3 days',
+    notes: 'BP 130/85. Follow-up in 2 weeks.',
+  },
+  {
+    id: 'cn2', patientId: '1', doctorId: '2', doctorName: 'Dr. Sarah Johnson',
+    date: '2026-06-05', chiefComplaint: 'Chest discomfort',
+    diagnosis: 'Mild anxiety, no cardiac findings', treatment: 'ECG normal',
+    notes: 'ECG performed. Reassured patient.',
+  },
+];
+
 // Mock Doctors
 export const mockDoctors: Doctor[] = [
   {
