@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -72,17 +72,17 @@ export default function CashUp() {
               <div className="font-medium">Expected</div>
               <div className="font-medium">Counted</div>
               {(['cash', 'card', 'mobile'] as const).map((m) => (
-                <>
+                <Fragment key={m}>
                   <div className="capitalize self-center">{m}</div>
                   <div className="self-center">${(expected as any)[m].toFixed(2)}</div>
-                  <Input key={m} type="number" value={m === 'cash' ? countedCash : m === 'card' ? countedCard : countedMobile}
+                  <Input type="number" value={m === 'cash' ? countedCash : m === 'card' ? countedCard : countedMobile}
                     onChange={(e) => {
                       const v = Number(e.target.value);
                       if (m === 'cash') setCountedCash(v);
                       else if (m === 'card') setCountedCard(v);
                       else setCountedMobile(v);
                     }} />
-                </>
+                </Fragment>
               ))}
             </div>
             <div className={`p-3 rounded text-center font-semibold ${variance === 0 ? 'bg-green-500/10 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
