@@ -9,13 +9,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockInvoices, mockPatients, mockServicePrices } from '@/store/mockData';
 import { Invoice, InvoiceLine } from '@/types';
-import { Plus, Printer, Trash2 } from 'lucide-react';
+import { Plus, Printer, Trash2, DollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Invoices() {
+  const { user } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
   const [dialog, setDialog] = useState(false);
   const [printInv, setPrintInv] = useState<Invoice | null>(null);
+  const [payInv, setPayInv] = useState<Invoice | null>(null);
+  const [payMethod, setPayMethod] = useState<'cash' | 'card' | 'mobile'>('cash');
   const [patientId, setPatientId] = useState('');
   const [lines, setLines] = useState<InvoiceLine[]>([]);
 
@@ -40,6 +44,24 @@ export default function Invoices() {
     setInvoices((p) => [inv, ...p]);
     setLines([]); setPatientId(''); setDialog(false);
     toast({ title: 'Invoice created', description: inv.invoiceNumber });
+  };
+
+  const recordPayment = () => {
+    if (!payInv) return;
+    const stationLabel =
+      user?.role === 'cashier' ? 'Pharmacy Cashier' : 'Reception';
+    const updated: Invoice = {
+      ...payInv,
+      amountPaid: payInv.total,
+      status: 'paid',
+      notes: `${payInv.notes ? payInv.notes + ' | ' : ''}Paid via ${payMethod} at ${stationLabel} by ${user?.firstName ?? ''}`,
+    };
+    setInvoices((p) => p.map((i) => (i.id === updated.id ? updated : i)));
+    const idx = mockInvoices.findIndex((i) => i.id === updated.id);
+    if (idx !== -1) mockInvoices[idx] = updated;
+    toast({ title: 'Payment recorded', description: `${updated.invoiceNumber} — $${updated.total} (${payMethod}) at ${stationLabel}` });
+    setPayInv(null);
+    setPayMethod('cash');
   };
 
   return (
@@ -97,13 +119,54 @@ export default function Invoices() {
                   <TableCell>{i.issuedDate}</TableCell>
                   <TableCell>${i.total.toFixed(2)}</TableCell>
                   <TableCell><Badge variant={i.status === 'paid' ? 'default' : 'destructive'} className="capitalize">{i.status}</Badge></TableCell>
-                  <TableCell><Button size="sm" variant="outline" onClick={() => setPrintInv(i)}><Printer className="w-4 h-4 mr-1" />Print</Button></TableCell>
+                  <TableCell className="space-x-2">
+                    {i.status !== 'paid' && (
+                      <Button size="sm" onClick={() => setPayInv(i)}>
+                        <DollarSign className="w-4 h-4 mr-1" />Pay
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => setPrintInv(i)}>
+                      <Printer className="w-4 h-4 mr-1" />Print
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!payInv} onOpenChange={(o) => !o && setPayInv(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Receive Payment</DialogTitle>
+          </DialogHeader>
+          {payInv && (
+            <div className="space-y-3">
+              <div className="text-sm">
+                <div><strong>Invoice:</strong> {payInv.invoiceNumber}</div>
+                <div><strong>Patient:</strong> {payInv.patientName}</div>
+                <div className="text-lg pt-2"><strong>Amount Due:</strong> ${payInv.total.toFixed(2)}</div>
+              </div>
+              <div>
+                <Label>Payment Method</Label>
+                <Select value={payMethod} onValueChange={(v: 'cash' | 'card' | 'mobile') => setPayMethod(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="mobile">Mobile Money</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Receiving at: {user?.role === 'cashier' ? 'Pharmacy Cashier' : 'Reception'}
+              </p>
+              <Button className="w-full" onClick={recordPayment}>Confirm Payment</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!printInv} onOpenChange={(o) => !o && setPrintInv(null)}>
         <DialogContent className="max-w-xl">
