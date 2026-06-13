@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MedicationHistory } from '@/components/patients/MedicationHistory';
 import { AllergyManagement } from '@/components/patients/AllergyManagement';
 import { DocumentManagement } from '@/components/patients/DocumentManagement';
+import { ConsultationHistory } from '@/components/patients/ConsultationHistory';
 import { ArrowLeft, User, Phone, Mail, MapPin, Calendar, Edit } from 'lucide-react';
 import { Patient } from '@/types';
 import { mockPatients } from '@/store/mockData';
@@ -135,13 +136,32 @@ export default function PatientDetail() {
         </CardContent>
       </Card>
 
+      {/* Alert banner for allergies & conditions */}
+      {(patient.medicalHistory.allergies.length > 0 || patient.medicalHistory.chronicConditions.length > 0) && (
+        <Card className="border-destructive bg-destructive/5">
+          <CardContent className="pt-6 space-y-1 text-sm">
+            {patient.medicalHistory.allergies.length > 0 && (
+              <p><strong className="text-destructive">⚠ Allergic to:</strong> {patient.medicalHistory.allergies.join(', ')}</p>
+            )}
+            {patient.medicalHistory.chronicConditions.length > 0 && (
+              <p><strong className="text-destructive">⚠ Conditions:</strong> {patient.medicalHistory.chronicConditions.join(', ')}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Medical Information Tabs */}
-      <Tabs defaultValue="medications" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="consultations" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="consultations">Consultations</TabsTrigger>
           <TabsTrigger value="medications">Medications</TabsTrigger>
           <TabsTrigger value="allergies">Allergies</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="consultations" className="space-y-4">
+          <ConsultationHistory patientId={patient.id} />
+        </TabsContent>
 
         <TabsContent value="medications" className="space-y-4">
           <MedicationHistory

@@ -17,6 +17,11 @@ import QRGenerator from "./pages/QRGenerator";
 import Pharmacy from "./pages/Pharmacy";
 import EquipmentPage from "./pages/Equipment";
 import CalendarView from "./pages/CalendarView";
+import CashUp from "./pages/CashUp";
+import Reports from "./pages/Reports";
+import Invoices from "./pages/Invoices";
+import ServicePrices from "./pages/ServicePrices";
+import PatientCredits from "./pages/PatientCredits";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +49,19 @@ const AppContent = () => {
             {(user?.role === 'admin' || user?.role === 'cashier' || user?.role === 'supervisor') && (
               <Route path="/pharmacy" element={<Pharmacy />} />
             )}
+            {(user?.role === 'admin' || user?.role === 'cashier') && (
+              <Route path="/cashup" element={<CashUp />} />
+            )}
+            {(user?.role === 'admin' || user?.role === 'supervisor') && (
+              <Route path="/reports" element={<Reports />} />
+            )}
+            {(user?.role === 'admin' || user?.role === 'reception' || user?.role === 'cashier') && (
+              <Route path="/invoices" element={<Invoices />} />
+            )}
+            {(user?.role === 'admin' || user?.role === 'supervisor' || user?.role === 'reception') && (
+              <Route path="/credits" element={<PatientCredits />} />
+            )}
+            <Route path="/services" element={<ServicePrices />} />
             {(user?.role === 'admin' || user?.role === 'doctor') && (
               <Route path="/equipment" element={<EquipmentPage />} />
             )}

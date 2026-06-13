@@ -1,4 +1,4 @@
-import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield, Pill, Wrench, CalendarDays } from 'lucide-react';
+import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield, Pill, Wrench, CalendarDays, Receipt, DollarSign, FileText, ClipboardList, Tag } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { User, UserRole } from '@/types';
@@ -15,6 +15,11 @@ const navigationItems = {
     { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
     { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
     { href: '/equipment', icon: Wrench, label: 'Equipment' },
+    { href: '/invoices', icon: Receipt, label: 'Invoices' },
+    { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
+    { href: '/services', icon: Tag, label: 'Service Prices' },
+    { href: '/cashup', icon: ClipboardList, label: 'Cash Up' },
+    { href: '/reports', icon: FileText, label: 'Reports' },
     { href: '/users', icon: Shield, label: 'User Management' },
     { href: '/doctors', icon: UserCircle, label: 'Doctors' },
     { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
@@ -26,18 +31,28 @@ const navigationItems = {
     { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
     { href: '/patients', icon: Users, label: 'My Patients' },
     { href: '/equipment', icon: Wrench, label: 'Equipment' },
+    { href: '/services', icon: Tag, label: 'Service Prices' },
   ],
   reception: [
     { href: '/patients', icon: Users, label: 'Patients' },
     { href: '/appointments', icon: Calendar, label: 'Appointments' },
     { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
+    { href: '/invoices', icon: Receipt, label: 'Invoices' },
+    { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
+    { href: '/services', icon: Tag, label: 'Service Prices' },
     { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
   ],
   cashier: [
     { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
+    { href: '/invoices', icon: Receipt, label: 'Invoices' },
+    { href: '/cashup', icon: ClipboardList, label: 'Cash Up' },
+    { href: '/services', icon: Tag, label: 'Service Prices' },
   ],
   supervisor: [
     { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
+    { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
+    { href: '/services', icon: Tag, label: 'Service Prices' },
+    { href: '/reports', icon: FileText, label: 'Reports' },
   ],
   patient: [
     { href: '/my-appointments', icon: Calendar, label: 'My Appointments' },
