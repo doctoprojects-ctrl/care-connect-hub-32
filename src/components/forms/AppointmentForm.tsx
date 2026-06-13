@@ -8,12 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Appointment } from '@/types';
-import { mockPatients, mockDoctors } from '@/store/mockData';
+import { mockPatients, mockDoctors, mockServicePrices, mockInvoices } from '@/store/mockData';
 import { toast } from 'sonner';
 
 const appointmentSchema = z.object({
   patientId: z.string().min(1, 'Please select a patient'),
   doctorId: z.string().min(1, 'Please select a doctor'),
+  serviceId: z.string().min(1, 'Please select a service'),
   appointmentDate: z.string().min(1, 'Date is required'),
   appointmentTime: z.string().min(1, 'Time is required'),
   duration: z.number().min(15, 'Duration must be at least 15 minutes'),
@@ -57,6 +58,7 @@ export function AppointmentForm({
     defaultValues: {
       patientId: preselectedPatientId || appointment?.patientId || '',
       doctorId: appointment?.doctorId || '',
+      serviceId: '',
       appointmentDate: appointment?.appointmentDate || '',
       appointmentTime: appointment?.appointmentTime || '',
       duration: appointment?.duration || 30,
@@ -81,7 +83,35 @@ export function AppointmentForm({
     };
 
     onSubmit(newAppointment);
-    toast.success(`Appointment ${isEdit ? 'updated' : 'booked'} successfully`);
+
+    // Auto-generate an unpaid invoice for the booked service so the patient
+    // can pay either at Reception or at the Pharmacy cashier.
+    if (!isEdit) {
+      const sv = mockServicePrices.find((s) => s.id === data.serviceId);
+      const p = mockPatients.find((x) => x.id === data.patientId);
+      if (sv && p) {
+        const num = mockInvoices.length + 1;
+        mockInvoices.unshift({
+          id: `inv-${Date.now()}`,
+          invoiceNumber: 'INV-' + String(num).padStart(4, '0'),
+          patientId: p.id,
+          patientName: `${p.firstName} ${p.lastName}`,
+          issuedDate: new Date().toISOString().split('T')[0],
+          dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+          lines: [{ description: sv.name, quantity: 1, unitPrice: sv.price }],
+          total: sv.price,
+          amountPaid: 0,
+          status: 'unpaid',
+          notes: `Auto-billed for appointment on ${data.appointmentDate} ${data.appointmentTime}`,
+        });
+        toast.success(`Appointment booked. Invoice INV-${String(num).padStart(4, '0')} (${sv.name} - $${sv.price}) created. Payable at Reception or Pharmacy Cashier.`);
+      } else {
+        toast.success('Appointment booked successfully');
+      }
+    } else {
+      toast.success('Appointment updated successfully');
+    }
+
     onOpenChange(false);
     form.reset();
   };
@@ -193,6 +223,31 @@ export function AppointmentForm({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="serviceId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Service & Charge</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select clinic service" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {mockServicePrices.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name} — ${s.price}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="duration"
