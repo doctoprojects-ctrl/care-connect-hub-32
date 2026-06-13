@@ -10,6 +10,11 @@ import {
   Equipment,
   MaintenanceSchedule,
   FaultyReport,
+  ServicePrice,
+  Invoice,
+  PatientCredit,
+  CashUp,
+  ConsultationNote,
 } from '../types';
 
 // Mock Users

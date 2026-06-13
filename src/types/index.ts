@@ -158,3 +158,71 @@ export interface FaultyReport {
   severity: 'low' | 'medium' | 'high';
   status: 'open' | 'in-repair' | 'resolved';
 }
+
+// ==================== Clinic services / billing ====================
+export interface ServicePrice {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  price: number;
+  description?: string;
+}
+
+export interface InvoiceLine {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  patientId: string;
+  patientName: string;
+  issuedDate: string;
+  dueDate: string;
+  lines: InvoiceLine[];
+  total: number;
+  amountPaid: number;
+  status: 'unpaid' | 'partial' | 'paid' | 'overdue';
+  notes?: string;
+}
+
+export interface PatientCredit {
+  patientId: string;
+  patientName: string;
+  balance: number; // positive = owed by patient
+  lastUpdated: string;
+}
+
+export interface CashUp {
+  id: string;
+  shiftNumber: string;
+  cashierId: string;
+  cashierName: string;
+  openedAt: string;
+  closedAt: string;
+  openingFloat: number;
+  expectedCash: number;
+  expectedCard: number;
+  expectedMobile: number;
+  countedCash: number;
+  countedCard: number;
+  countedMobile: number;
+  variance: number;
+  notes?: string;
+}
+
+export interface ConsultationNote {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  chiefComplaint: string;
+  diagnosis: string;
+  treatment: string;
+  prescription?: string;
+  notes?: string;
+}
