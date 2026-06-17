@@ -22,6 +22,7 @@ import Reports from "./pages/Reports";
 import Invoices from "./pages/Invoices";
 import ServicePrices from "./pages/ServicePrices";
 import PatientCredits from "./pages/PatientCredits";
+import Statements from "./pages/Statements";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,9 @@ const AppContent = () => {
             )}
             {(user?.role === 'admin' || user?.role === 'supervisor' || user?.role === 'reception') && (
               <Route path="/credits" element={<PatientCredits />} />
+            )}
+            {(user?.role === 'admin' || user?.role === 'reception' || user?.role === 'supervisor' || user?.role === 'doctor') && (
+              <Route path="/statements" element={<Statements />} />
             )}
             <Route path="/services" element={<ServicePrices />} />
             {(user?.role === 'admin' || user?.role === 'doctor') && (

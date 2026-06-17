@@ -12,6 +12,7 @@ import { Invoice, InvoiceLine } from '@/types';
 import { Plus, Printer, Trash2, DollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { clinicConfig, money } from '@/lib/clinicConfig';
 
 export default function Invoices() {
   const { user } = useAuth();
@@ -169,30 +170,49 @@ export default function Invoices() {
       </Dialog>
 
       <Dialog open={!!printInv} onOpenChange={(o) => !o && setPrintInv(null)}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{printInv?.invoiceNumber}</DialogTitle></DialogHeader>
           {printInv && (
-            <div className="space-y-3 print:p-6">
-              <div className="border-b pb-3">
-                <h2 className="text-2xl font-bold">MediCare Clinic</h2>
-                <p className="text-sm text-muted-foreground">Tax Invoice</p>
+            <div className="space-y-4 p-2 bg-white text-black print:p-10">
+              <div className="flex justify-between items-start border-b pb-3">
+                <div>
+                  <h2 className="text-2xl font-bold">{clinicConfig.name}</h2>
+                  <p className="text-xs text-muted-foreground">{clinicConfig.tagline}</p>
+                  <p className="text-xs">{clinicConfig.address}</p>
+                  <p className="text-xs">{clinicConfig.phone} · {clinicConfig.email}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-semibold uppercase tracking-wide">Tax Invoice</div>
+                  <div className="text-sm text-muted-foreground">{clinicConfig.taxId}</div>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><strong>Patient:</strong> {printInv.patientName}</div>
-                <div><strong>Date:</strong> {printInv.issuedDate}</div>
-                <div><strong>Invoice #:</strong> {printInv.invoiceNumber}</div>
-                <div><strong>Due:</strong> {printInv.dueDate}</div>
+                <div><strong>Billed to:</strong> {printInv.patientName}</div>
+                <div className="text-right"><strong>Invoice #:</strong> {printInv.invoiceNumber}</div>
+                <div><strong>Issued:</strong> {printInv.issuedDate}</div>
+                <div className="text-right"><strong>Due:</strong> {printInv.dueDate}</div>
               </div>
               <Table>
-                <TableHeader><TableRow><TableHead>Description</TableHead><TableHead>Qty</TableHead><TableHead>Price</TableHead><TableHead>Total</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Description</TableHead><TableHead className="text-right">Qty</TableHead><TableHead className="text-right">Price</TableHead><TableHead className="text-right">Total</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {printInv.lines.map((l, i) => (
-                    <TableRow key={i}><TableCell>{l.description}</TableCell><TableCell>{l.quantity}</TableCell><TableCell>${l.unitPrice.toFixed(2)}</TableCell><TableCell>${(l.quantity * l.unitPrice).toFixed(2)}</TableCell></TableRow>
+                    <TableRow key={i}>
+                      <TableCell>{l.description}</TableCell>
+                      <TableCell className="text-right">{l.quantity}</TableCell>
+                      <TableCell className="text-right">{money(l.unitPrice)}</TableCell>
+                      <TableCell className="text-right">{money(l.quantity * l.unitPrice)}</TableCell>
+                    </TableRow>
                   ))}
                 </TableBody>
               </Table>
-              <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Total</span><span>${printInv.total.toFixed(2)}</span></div>
-              <Button className="w-full" onClick={() => window.print()}><Printer className="w-4 h-4 mr-2" />Print Invoice</Button>
+              <div className="space-y-1 pt-2 border-t text-sm">
+                <div className="flex justify-between"><span>Subtotal</span><span>{money(printInv.total)}</span></div>
+                <div className="flex justify-between"><span>Amount paid</span><span>{money(printInv.amountPaid)}</span></div>
+                <div className="flex justify-between font-bold text-lg pt-1 border-t"><span>Balance due</span><span>{money(printInv.total - printInv.amountPaid)}</span></div>
+              </div>
+              {printInv.notes && <p className="text-xs text-muted-foreground border-t pt-2"><strong>Notes:</strong> {printInv.notes}</p>}
+              <p className="text-xs text-muted-foreground text-center pt-4">Thank you for choosing {clinicConfig.name}.</p>
+              <Button className="w-full print:hidden" onClick={() => window.print()}><Printer className="w-4 h-4 mr-2" />Print Invoice</Button>
             </div>
           )}
         </DialogContent>

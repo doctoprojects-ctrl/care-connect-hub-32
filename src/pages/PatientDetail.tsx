@@ -8,6 +8,9 @@ import { MedicationHistory } from '@/components/patients/MedicationHistory';
 import { AllergyManagement } from '@/components/patients/AllergyManagement';
 import { DocumentManagement } from '@/components/patients/DocumentManagement';
 import { ConsultationHistory } from '@/components/patients/ConsultationHistory';
+import { VitalsCapture } from '@/components/patients/VitalsCapture';
+import { MedicalCertificateTab } from '@/components/patients/MedicalCertificate';
+import { PatientLedger } from '@/components/patients/PatientLedger';
 import { ArrowLeft, User, Phone, Mail, MapPin, Calendar, Edit } from 'lucide-react';
 import { Patient } from '@/types';
 import { mockPatients } from '@/store/mockData';
@@ -152,15 +155,22 @@ export default function PatientDetail() {
 
       {/* Medical Information Tabs */}
       <Tabs defaultValue="consultations" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="consultations">Consultations</TabsTrigger>
+          <TabsTrigger value="vitals">Vitals</TabsTrigger>
           <TabsTrigger value="medications">Medications</TabsTrigger>
           <TabsTrigger value="allergies">Allergies</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="ledger">Account</TabsTrigger>
+          <TabsTrigger value="certificates">Sick Notes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="consultations" className="space-y-4">
           <ConsultationHistory patientId={patient.id} />
+        </TabsContent>
+
+        <TabsContent value="vitals" className="space-y-4">
+          <VitalsCapture patientId={patient.id} />
         </TabsContent>
 
         <TabsContent value="medications" className="space-y-4">
@@ -227,6 +237,14 @@ export default function PatientDetail() {
               }
             ]}
           />
+        </TabsContent>
+
+        <TabsContent value="ledger" className="space-y-4">
+          <PatientLedger patient={patient} />
+        </TabsContent>
+
+        <TabsContent value="certificates" className="space-y-4">
+          <MedicalCertificateTab patient={patient} />
         </TabsContent>
       </Tabs>
     </div>
