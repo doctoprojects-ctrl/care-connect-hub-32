@@ -226,3 +226,31 @@ export interface ConsultationNote {
   prescription?: string;
   notes?: string;
 }
+
+export interface Vitals {
+  id: string;
+  patientId: string;
+  recordedBy: string;
+  recordedAt: string;
+  bloodPressure?: string; // e.g. "120/80"
+  heartRate?: number;     // bpm
+  temperature?: number;   // °C
+  respiratoryRate?: number;
+  oxygenSaturation?: number; // %
+  weight?: number;        // kg
+  height?: number;        // cm
+  bmi?: number;
+  notes?: string;
+}
+
+export interface MedicalCertificate {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorName: string;
+  issuedDate: string;
+  fromDate: string;
+  toDate: string;
+  reason: string;
+  recommendation: string;
+}

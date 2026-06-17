@@ -17,6 +17,7 @@ const navigationItems = {
     { href: '/equipment', icon: Wrench, label: 'Equipment' },
     { href: '/invoices', icon: Receipt, label: 'Invoices' },
     { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
+    { href: '/statements', icon: FileText, label: 'Statements' },
     { href: '/services', icon: Tag, label: 'Service Prices' },
     { href: '/cashup', icon: ClipboardList, label: 'Cash Up' },
     { href: '/reports', icon: FileText, label: 'Reports' },
@@ -39,6 +40,7 @@ const navigationItems = {
     { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
     { href: '/invoices', icon: Receipt, label: 'Invoices' },
     { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
+    { href: '/statements', icon: FileText, label: 'Statements' },
     { href: '/services', icon: Tag, label: 'Service Prices' },
     { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
   ],
@@ -51,6 +53,7 @@ const navigationItems = {
   supervisor: [
     { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
     { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
+    { href: '/statements', icon: FileText, label: 'Statements' },
     { href: '/services', icon: Tag, label: 'Service Prices' },
     { href: '/reports', icon: FileText, label: 'Reports' },
   ],

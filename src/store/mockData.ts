@@ -15,6 +15,8 @@ import {
   PatientCredit,
   CashUp,
   ConsultationNote,
+  Vitals,
+  MedicalCertificate,
 } from '../types';
 
 // Mock Users
@@ -184,6 +186,16 @@ export const mockConsultations: ConsultationNote[] = [
     notes: 'ECG performed. Reassured patient.',
   },
 ];
+
+export const mockVitals: Vitals[] = [
+  {
+    id: 'v1', patientId: '1', recordedBy: 'Nurse Jane', recordedAt: '2026-06-05T08:45:00Z',
+    bloodPressure: '130/85', heartRate: 78, temperature: 36.7, respiratoryRate: 16,
+    oxygenSaturation: 98, weight: 82, height: 178, bmi: 25.9, notes: 'Pre-consult',
+  },
+];
+
+export const mockCertificates: MedicalCertificate[] = [];
 
 // Mock Doctors
 export const mockDoctors: Doctor[] = [
