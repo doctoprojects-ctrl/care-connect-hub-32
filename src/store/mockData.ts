@@ -15,6 +15,8 @@ import {
   PatientCredit,
   CashUp,
   ConsultationNote,
+  Vitals,
+  MedicalCertificate,
 } from '../types';
 
 // Mock Users
