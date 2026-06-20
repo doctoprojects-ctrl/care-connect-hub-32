@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PINLogin } from "@/components/auth/PINLogin";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
@@ -23,6 +24,7 @@ import Invoices from "./pages/Invoices";
 import ServicePrices from "./pages/ServicePrices";
 import PatientCredits from "./pages/PatientCredits";
 import Statements from "./pages/Statements";
+import Manual from "./pages/Manual";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +68,7 @@ const AppContent = () => {
               <Route path="/statements" element={<Statements />} />
             )}
             <Route path="/services" element={<ServicePrices />} />
+            <Route path="/manual" element={<Manual />} />
             {(user?.role === 'admin' || user?.role === 'doctor') && (
               <Route path="/equipment" element={<EquipmentPage />} />
             )}
@@ -86,18 +89,20 @@ const AppContent = () => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/book" element={<QRBooking />} />
-              <Route path="/*" element={<AppContent />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/book" element={<QRBooking />} />
+                <Route path="/*" element={<AppContent />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 };

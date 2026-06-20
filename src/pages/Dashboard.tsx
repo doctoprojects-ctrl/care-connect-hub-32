@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Calendar, UserCheck, Clock } from 'lucide-react';
 import { mockPatients, mockAppointments } from '@/store/mockData';
+import { useT } from '@/contexts/LanguageContext';
 
 export default function Dashboard() {
+  const t = useT();
   const totalPatients = mockPatients.length;
   const todayAppointments = mockAppointments.filter(apt => 
     apt.appointmentDate === new Date().toISOString().split('T')[0]
@@ -12,25 +14,25 @@ export default function Dashboard() {
 
   const stats = [
     {
-      title: 'Total Patients',
+      title: t('stat_total_patients'),
       value: totalPatients,
       icon: Users,
       color: 'text-primary',
     },
     {
-      title: "Today's Appointments",
+      title: t('stat_today_appts'),
       value: todayAppointments,
       icon: Calendar,
       color: 'text-secondary-foreground',
     },
     {
-      title: 'Confirmed Appointments',
+      title: t('stat_confirmed_appts'),
       value: confirmedAppointments,  
       icon: UserCheck,
       color: 'text-primary',
     },
     {
-      title: 'Pending Appointments',
+      title: t('stat_pending_appts'),
       value: pendingAppointments,
       icon: Clock,
       color: 'text-muted-foreground',
@@ -40,10 +42,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Welcome to your medical practice management system
-        </p>
+        <h2 className="text-3xl font-bold tracking-tight">{t('nav_dashboard')}</h2>
+        <p className="text-muted-foreground">{t('dashboard_welcome')}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -65,7 +65,7 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>{t('recent_activity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -87,7 +87,7 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Appointments</CardTitle>
+            <CardTitle>{t('upcoming_appts')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -110,21 +110,21 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>{t('quick_actions')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <button className="w-full text-left text-sm hover:bg-accent p-2 rounded">
-                Add New Patient
+                {t('qa_add_patient')}
               </button>
               <button className="w-full text-left text-sm hover:bg-accent p-2 rounded">
-                Book Appointment
+                {t('qa_book_appt')}
               </button>
               <button className="w-full text-left text-sm hover:bg-accent p-2 rounded">
-                Generate QR Code
+                {t('qa_generate_qr')}
               </button>
               <button className="w-full text-left text-sm hover:bg-accent p-2 rounded">
-                View Reports
+                {t('qa_view_reports')}
               </button>
             </div>
           </CardContent>
