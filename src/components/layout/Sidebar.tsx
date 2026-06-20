@@ -1,76 +1,87 @@
-import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield, Pill, Wrench, CalendarDays, Receipt, DollarSign, FileText, ClipboardList, Tag } from 'lucide-react';
+import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield, Pill, Wrench, CalendarDays, Receipt, DollarSign, FileText, ClipboardList, Tag, BookOpen } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { User, UserRole } from '@/types';
+import { useT } from '@/contexts/LanguageContext';
+import type { TranslationKey } from '@/lib/translations';
 
 interface SidebarProps {
   currentUser: User;
 }
 
-const navigationItems = {
+type NavItem = { href: string; icon: typeof Calendar; labelKey: TranslationKey };
+
+const navigationItems: Record<string, NavItem[]> = {
   admin: [
-    { href: '/dashboard', icon: BarChart3, label: 'Dashboard' },
-    { href: '/patients', icon: Users, label: 'Patients' },
-    { href: '/appointments', icon: Calendar, label: 'Appointments' },
-    { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
-    { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
-    { href: '/equipment', icon: Wrench, label: 'Equipment' },
-    { href: '/invoices', icon: Receipt, label: 'Invoices' },
-    { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
-    { href: '/statements', icon: FileText, label: 'Statements' },
-    { href: '/services', icon: Tag, label: 'Service Prices' },
-    { href: '/cashup', icon: ClipboardList, label: 'Cash Up' },
-    { href: '/reports', icon: FileText, label: 'Reports' },
-    { href: '/users', icon: Shield, label: 'User Management' },
-    { href: '/doctors', icon: UserCircle, label: 'Doctors' },
-    { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
-    { href: '/settings', icon: Settings, label: 'Settings' },
+    { href: '/dashboard', icon: BarChart3, labelKey: 'nav_dashboard' },
+    { href: '/patients', icon: Users, labelKey: 'nav_patients' },
+    { href: '/appointments', icon: Calendar, labelKey: 'nav_appointments' },
+    { href: '/calendar', icon: CalendarDays, labelKey: 'nav_calendar' },
+    { href: '/pharmacy', icon: Pill, labelKey: 'nav_pharmacy' },
+    { href: '/equipment', icon: Wrench, labelKey: 'nav_equipment' },
+    { href: '/invoices', icon: Receipt, labelKey: 'nav_invoices' },
+    { href: '/credits', icon: DollarSign, labelKey: 'nav_credits' },
+    { href: '/statements', icon: FileText, labelKey: 'nav_statements' },
+    { href: '/services', icon: Tag, labelKey: 'nav_services' },
+    { href: '/cashup', icon: ClipboardList, labelKey: 'nav_cashup' },
+    { href: '/reports', icon: FileText, labelKey: 'nav_reports' },
+    { href: '/users', icon: Shield, labelKey: 'nav_users' },
+    { href: '/doctors', icon: UserCircle, labelKey: 'nav_doctors' },
+    { href: '/qr-generator', icon: QrCode, labelKey: 'nav_qr' },
+    { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
+    { href: '/settings', icon: Settings, labelKey: 'nav_settings' },
   ],
   doctor: [
-    { href: '/dashboard', icon: BarChart3, label: 'Dashboard' },
-    { href: '/appointments', icon: Calendar, label: 'My Appointments' },
-    { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
-    { href: '/patients', icon: Users, label: 'My Patients' },
-    { href: '/equipment', icon: Wrench, label: 'Equipment' },
-    { href: '/services', icon: Tag, label: 'Service Prices' },
+    { href: '/dashboard', icon: BarChart3, labelKey: 'nav_dashboard' },
+    { href: '/appointments', icon: Calendar, labelKey: 'nav_my_appointments' },
+    { href: '/calendar', icon: CalendarDays, labelKey: 'nav_calendar' },
+    { href: '/patients', icon: Users, labelKey: 'nav_my_patients' },
+    { href: '/equipment', icon: Wrench, labelKey: 'nav_equipment' },
+    { href: '/services', icon: Tag, labelKey: 'nav_services' },
+    { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
   ],
   reception: [
-    { href: '/patients', icon: Users, label: 'Patients' },
-    { href: '/appointments', icon: Calendar, label: 'Appointments' },
-    { href: '/calendar', icon: CalendarDays, label: 'Calendar View' },
-    { href: '/invoices', icon: Receipt, label: 'Invoices' },
-    { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
-    { href: '/statements', icon: FileText, label: 'Statements' },
-    { href: '/services', icon: Tag, label: 'Service Prices' },
-    { href: '/qr-generator', icon: QrCode, label: 'QR Generator' },
+    { href: '/patients', icon: Users, labelKey: 'nav_patients' },
+    { href: '/appointments', icon: Calendar, labelKey: 'nav_appointments' },
+    { href: '/calendar', icon: CalendarDays, labelKey: 'nav_calendar' },
+    { href: '/invoices', icon: Receipt, labelKey: 'nav_invoices' },
+    { href: '/credits', icon: DollarSign, labelKey: 'nav_credits' },
+    { href: '/statements', icon: FileText, labelKey: 'nav_statements' },
+    { href: '/services', icon: Tag, labelKey: 'nav_services' },
+    { href: '/qr-generator', icon: QrCode, labelKey: 'nav_qr' },
+    { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
   ],
   cashier: [
-    { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
-    { href: '/invoices', icon: Receipt, label: 'Invoices' },
-    { href: '/cashup', icon: ClipboardList, label: 'Cash Up' },
-    { href: '/services', icon: Tag, label: 'Service Prices' },
+    { href: '/pharmacy', icon: Pill, labelKey: 'nav_pharmacy' },
+    { href: '/invoices', icon: Receipt, labelKey: 'nav_invoices' },
+    { href: '/cashup', icon: ClipboardList, labelKey: 'nav_cashup' },
+    { href: '/services', icon: Tag, labelKey: 'nav_services' },
+    { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
   ],
   supervisor: [
-    { href: '/pharmacy', icon: Pill, label: 'Pharmacy' },
-    { href: '/credits', icon: DollarSign, label: 'Patient Credits' },
-    { href: '/statements', icon: FileText, label: 'Statements' },
-    { href: '/services', icon: Tag, label: 'Service Prices' },
-    { href: '/reports', icon: FileText, label: 'Reports' },
+    { href: '/pharmacy', icon: Pill, labelKey: 'nav_pharmacy' },
+    { href: '/credits', icon: DollarSign, labelKey: 'nav_credits' },
+    { href: '/statements', icon: FileText, labelKey: 'nav_statements' },
+    { href: '/services', icon: Tag, labelKey: 'nav_services' },
+    { href: '/reports', icon: FileText, labelKey: 'nav_reports' },
+    { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
   ],
   patient: [
-    { href: '/my-appointments', icon: Calendar, label: 'My Appointments' },
-    { href: '/profile', icon: UserCircle, label: 'My Profile' },
+    { href: '/my-appointments', icon: Calendar, labelKey: 'nav_my_appointments' },
+    { href: '/profile', icon: UserCircle, labelKey: 'nav_profile' },
+    { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
   ],
 };
 
 export function Sidebar({ currentUser }: SidebarProps) {
   const location = useLocation();
+  const t = useT();
   const items = navigationItems[currentUser.role as UserRole] || [];
 
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border min-h-screen">
       <div className="p-6">
-        <h2 className="text-xl font-bold text-sidebar-foreground">MediCare PMS</h2>
+        <h2 className="text-xl font-bold text-sidebar-foreground">{t('app_short')}</h2>
         <p className="text-sm text-sidebar-foreground/70 mt-1">
           {currentUser.firstName} {currentUser.lastName}
         </p>
@@ -90,7 +101,7 @@ export function Sidebar({ currentUser }: SidebarProps) {
             )}
           >
             <item.icon className="w-4 h-4" />
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         ))}
       </nav>
