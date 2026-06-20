@@ -25,6 +25,7 @@ import ServicePrices from "./pages/ServicePrices";
 import PatientCredits from "./pages/PatientCredits";
 import Statements from "./pages/Statements";
 import Manual from "./pages/Manual";
+import Doctors from "./pages/Doctors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,9 @@ const AppContent = () => {
             )}
             <Route path="/services" element={<ServicePrices />} />
             <Route path="/manual" element={<Manual />} />
+            {(user?.role === 'admin' || user?.role === 'reception') && (
+              <Route path="/doctors" element={<Doctors />} />
+            )}
             {(user?.role === 'admin' || user?.role === 'doctor') && (
               <Route path="/equipment" element={<EquipmentPage />} />
             )}
