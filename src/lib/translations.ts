@@ -150,6 +150,8 @@ export const translations = {
     nav_settings: 'Paramètres',
     nav_profile: 'Mon profil',
     nav_manual: "Manuel d'utilisation",
+    nav_queue: "File d'attente",
+    nav_ads: 'Publicités',
 
     // Dashboard
     dashboard_welcome: 'Bienvenue dans votre système de gestion du cabinet médical',

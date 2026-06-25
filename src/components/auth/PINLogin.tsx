@@ -119,6 +119,7 @@ export const PINLogin = () => {
               <p>Reception: Mary (PIN: 5678)</p>
               <p>Cashier: Cathy (PIN: 9999)</p>
               <p>Supervisor: Sam (PIN: 7777)</p>
+              <p>Marketing: Mona (PIN: 4321)</p>
             </div>
           </div>
         </CardContent>
