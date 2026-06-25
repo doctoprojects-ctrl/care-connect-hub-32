@@ -49,6 +49,8 @@ export const translations = {
     nav_settings: 'Settings',
     nav_profile: 'My Profile',
     nav_manual: 'User Manual',
+    nav_queue: 'Queue',
+    nav_ads: 'Advertisements',
 
     // Dashboard
     dashboard_welcome: 'Welcome to your medical practice management system',
@@ -148,6 +150,8 @@ export const translations = {
     nav_settings: 'Paramètres',
     nav_profile: 'Mon profil',
     nav_manual: "Manuel d'utilisation",
+    nav_queue: "File d'attente",
+    nav_ads: 'Publicités',
 
     // Dashboard
     dashboard_welcome: 'Bienvenue dans votre système de gestion du cabinet médical',

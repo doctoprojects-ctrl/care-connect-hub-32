@@ -1,4 +1,4 @@
-import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield, Pill, Wrench, CalendarDays, Receipt, DollarSign, FileText, ClipboardList, Tag, BookOpen } from 'lucide-react';
+import { Calendar, Users, UserCircle, Settings, QrCode, BarChart3, Shield, Pill, Wrench, CalendarDays, Receipt, DollarSign, FileText, ClipboardList, Tag, BookOpen, ListOrdered, Megaphone } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { User, UserRole } from '@/types';
@@ -17,6 +17,7 @@ const navigationItems: Record<string, NavItem[]> = {
     { href: '/patients', icon: Users, labelKey: 'nav_patients' },
     { href: '/appointments', icon: Calendar, labelKey: 'nav_appointments' },
     { href: '/calendar', icon: CalendarDays, labelKey: 'nav_calendar' },
+    { href: '/queue', icon: ListOrdered, labelKey: 'nav_queue' },
     { href: '/pharmacy', icon: Pill, labelKey: 'nav_pharmacy' },
     { href: '/equipment', icon: Wrench, labelKey: 'nav_equipment' },
     { href: '/invoices', icon: Receipt, labelKey: 'nav_invoices' },
@@ -28,6 +29,7 @@ const navigationItems: Record<string, NavItem[]> = {
     { href: '/users', icon: Shield, labelKey: 'nav_users' },
     { href: '/doctors', icon: UserCircle, labelKey: 'nav_doctors' },
     { href: '/qr-generator', icon: QrCode, labelKey: 'nav_qr' },
+    { href: '/ads', icon: Megaphone, labelKey: 'nav_ads' },
     { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
     { href: '/settings', icon: Settings, labelKey: 'nav_settings' },
   ],
@@ -35,6 +37,7 @@ const navigationItems: Record<string, NavItem[]> = {
     { href: '/dashboard', icon: BarChart3, labelKey: 'nav_dashboard' },
     { href: '/appointments', icon: Calendar, labelKey: 'nav_my_appointments' },
     { href: '/calendar', icon: CalendarDays, labelKey: 'nav_calendar' },
+    { href: '/queue', icon: ListOrdered, labelKey: 'nav_queue' },
     { href: '/patients', icon: Users, labelKey: 'nav_my_patients' },
     { href: '/equipment', icon: Wrench, labelKey: 'nav_equipment' },
     { href: '/services', icon: Tag, labelKey: 'nav_services' },
@@ -44,6 +47,7 @@ const navigationItems: Record<string, NavItem[]> = {
     { href: '/patients', icon: Users, labelKey: 'nav_patients' },
     { href: '/appointments', icon: Calendar, labelKey: 'nav_appointments' },
     { href: '/calendar', icon: CalendarDays, labelKey: 'nav_calendar' },
+    { href: '/queue', icon: ListOrdered, labelKey: 'nav_queue' },
     { href: '/invoices', icon: Receipt, labelKey: 'nav_invoices' },
     { href: '/credits', icon: DollarSign, labelKey: 'nav_credits' },
     { href: '/statements', icon: FileText, labelKey: 'nav_statements' },
@@ -54,6 +58,7 @@ const navigationItems: Record<string, NavItem[]> = {
   cashier: [
     { href: '/pharmacy', icon: Pill, labelKey: 'nav_pharmacy' },
     { href: '/invoices', icon: Receipt, labelKey: 'nav_invoices' },
+    { href: '/queue', icon: ListOrdered, labelKey: 'nav_queue' },
     { href: '/cashup', icon: ClipboardList, labelKey: 'nav_cashup' },
     { href: '/services', icon: Tag, labelKey: 'nav_services' },
     { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
@@ -63,7 +68,12 @@ const navigationItems: Record<string, NavItem[]> = {
     { href: '/credits', icon: DollarSign, labelKey: 'nav_credits' },
     { href: '/statements', icon: FileText, labelKey: 'nav_statements' },
     { href: '/services', icon: Tag, labelKey: 'nav_services' },
+    { href: '/queue', icon: ListOrdered, labelKey: 'nav_queue' },
     { href: '/reports', icon: FileText, labelKey: 'nav_reports' },
+    { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
+  ],
+  marketing: [
+    { href: '/ads', icon: Megaphone, labelKey: 'nav_ads' },
     { href: '/manual', icon: BookOpen, labelKey: 'nav_manual' },
   ],
   patient: [

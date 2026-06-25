@@ -1,0 +1,250 @@
+import { useMemo, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { mockPatients, mockAppointments } from '@/store/mockData';
+import {
+  callNext,
+  issueTicket,
+  markDone,
+  markServing,
+  QueueDept,
+  skipTicket,
+  useQueueTickets,
+} from '@/lib/queueStore';
+import { ExternalLink, PhoneCall, SkipForward, CheckCircle2, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const DEPT_LABELS: Record<QueueDept, string> = {
+  doctor: 'Doctor',
+  pharmacy: 'Pharmacy',
+  triage: 'Triage',
+};
+
+export default function Queue() {
+  const { user } = useAuth();
+  const tickets = useQueueTickets();
+
+  // Check-in form
+  const [patientId, setPatientId] = useState<string>('');
+  const [walkInName, setWalkInName] = useState('');
+  const [dept, setDept] = useState<QueueDept>('triage');
+  const [room, setRoom] = useState<Record<QueueDept, string>>({
+    doctor: 'Room 1',
+    pharmacy: 'Pharmacy',
+    triage: 'Triage 1',
+  });
+
+  const todaysAppointments = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return mockAppointments.filter(a => a.appointmentDate === today);
+  }, []);
+
+  const handleIssue = (e: React.FormEvent) => {
+    e.preventDefault();
+    const patient = patientId ? mockPatients.find(p => p.id === patientId) : null;
+    const name = patient ? `${patient.firstName} ${patient.lastName}` : walkInName.trim();
+    if (!name) {
+      toast({ title: 'Patient required', description: 'Select a patient or enter a walk-in name.', variant: 'destructive' });
+      return;
+    }
+    const appt = patient
+      ? todaysAppointments.find(a => a.patientId === patient.id)
+      : undefined;
+    const ticket = issueTicket({
+      dept,
+      patientId: patient?.id,
+      patientName: name,
+      appointmentId: appt?.id,
+    });
+    if (appt) {
+      appt.status = 'confirmed';
+      appt.updatedAt = new Date().toISOString();
+    }
+    toast({ title: `Ticket ${ticket.code}`, description: `${name} added to ${DEPT_LABELS[dept]} queue.` });
+    setPatientId('');
+    setWalkInName('');
+  };
+
+  const callerName = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+
+  const handleCallNext = (d: QueueDept) => {
+    const r = room[d].trim() || DEPT_LABELS[d];
+    const next = callNext(d, r, callerName);
+    if (!next) {
+      toast({ title: 'Queue empty', description: `No waiting patients for ${DEPT_LABELS[d]}.` });
+      return;
+    }
+    toast({ title: `Calling ${next.code}`, description: `${next.patientName} → ${r}` });
+  };
+
+  const byDept = (d: QueueDept) => tickets.filter(t => t.dept === d);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">Queue Management</h1>
+          <p className="text-muted-foreground">Check patients in and call the next number to a room.</p>
+        </div>
+        <Button asChild variant="outline">
+          <Link to="/queue/display" target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="w-4 h-4 mr-2" /> Open Display Screen
+          </Link>
+        </Button>
+      </div>
+
+      <Tabs defaultValue="checkin" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="checkin">Check-in</TabsTrigger>
+          <TabsTrigger value="call">Call Next</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="checkin">
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><UserPlus className="w-5 h-5" /> Register Arrival</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleIssue} className="space-y-3">
+                  <div className="space-y-1">
+                    <Label>Patient (with appointment)</Label>
+                    <Select value={patientId} onValueChange={setPatientId}>
+                      <SelectTrigger><SelectValue placeholder="Select patient" /></SelectTrigger>
+                      <SelectContent>
+                        {mockPatients.map(p => {
+                          const appt = todaysAppointments.find(a => a.patientId === p.id);
+                          return (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.firstName} {p.lastName}{appt ? ` · ${appt.appointmentTime}` : ''}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Or walk-in name</Label>
+                    <Input value={walkInName} onChange={e => setWalkInName(e.target.value)} placeholder="Walk-in patient name" disabled={!!patientId} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Send to</Label>
+                    <Select value={dept} onValueChange={(v) => setDept(v as QueueDept)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="triage">Triage (TR)</SelectItem>
+                        <SelectItem value="doctor">Doctor (DR)</SelectItem>
+                        <SelectItem value="pharmacy">Pharmacy (PH)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button type="submit" className="w-full">Issue Ticket</Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <div className="md:col-span-2 grid sm:grid-cols-3 gap-4">
+              {(['triage', 'doctor', 'pharmacy'] as QueueDept[]).map(d => {
+                const items = byDept(d);
+                const waiting = items.filter(t => t.status === 'waiting');
+                return (
+                  <Card key={d}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center justify-between">
+                        {DEPT_LABELS[d]}
+                        <Badge variant="secondary">{waiting.length} waiting</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 max-h-72 overflow-auto">
+                      {items.length === 0 && <p className="text-sm text-muted-foreground">No tickets today.</p>}
+                      {items.map(t => (
+                        <div key={t.id} className="flex items-center justify-between border rounded-md px-2 py-1.5 text-sm">
+                          <div>
+                            <div className="font-semibold">{t.code}</div>
+                            <div className="text-xs text-muted-foreground">{t.patientName}</div>
+                          </div>
+                          <Badge variant={
+                            t.status === 'waiting' ? 'secondary' :
+                            t.status === 'called' ? 'default' :
+                            t.status === 'serving' ? 'default' :
+                            t.status === 'done' ? 'outline' : 'destructive'
+                          }>{t.status}{t.room ? ` · ${t.room}` : ''}</Badge>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="call">
+          <div className="grid md:grid-cols-3 gap-4">
+            {(['doctor', 'triage', 'pharmacy'] as QueueDept[]).map(d => {
+              const items = byDept(d);
+              const waiting = items.filter(t => t.status === 'waiting');
+              const called = items.filter(t => t.status === 'called' || t.status === 'serving');
+              return (
+                <Card key={d}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {DEPT_LABELS[d]}
+                      <Badge variant="secondary">{waiting.length} waiting</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Room / Counter</Label>
+                      <Input
+                        value={room[d]}
+                        onChange={(e) => setRoom({ ...room, [d]: e.target.value })}
+                        placeholder="e.g. Room 2"
+                      />
+                    </div>
+                    <Button className="w-full" onClick={() => handleCallNext(d)} disabled={waiting.length === 0}>
+                      <PhoneCall className="w-4 h-4 mr-2" /> Call Next
+                    </Button>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground uppercase">Now serving</p>
+                      {called.length === 0 && <p className="text-sm text-muted-foreground">Nothing called yet.</p>}
+                      {called.map(t => (
+                        <div key={t.id} className="border rounded-md p-2 text-sm space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold">{t.code} → {t.room}</span>
+                            <Badge>{t.status}</Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground">{t.patientName}</div>
+                          <div className="flex gap-1 pt-1">
+                            {t.status === 'called' && (
+                              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => markServing(t.id)}>
+                                Start
+                              </Button>
+                            )}
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => markDone(t.id)}>
+                              <CheckCircle2 className="w-3 h-3 mr-1" /> Done
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => skipTicket(t.id)}>
+                              <SkipForward className="w-3 h-3 mr-1" /> Skip
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
