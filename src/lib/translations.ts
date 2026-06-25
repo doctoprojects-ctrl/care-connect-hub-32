@@ -49,6 +49,8 @@ export const translations = {
     nav_settings: 'Settings',
     nav_profile: 'My Profile',
     nav_manual: 'User Manual',
+    nav_queue: 'Queue',
+    nav_ads: 'Advertisements',
 
     // Dashboard
     dashboard_welcome: 'Welcome to your medical practice management system',
