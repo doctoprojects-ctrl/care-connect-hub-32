@@ -30,6 +30,9 @@ export default function QueueDisplay() {
   const animationRef = useRef<number>();
   const lastTimestampRef = useRef<number>(0);
 
+  // Define currentAd BEFORE using it in effects
+  const currentAd = ads[adIdx];
+
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
@@ -93,8 +96,7 @@ export default function QueueDisplay() {
   // Rotate ads (images every 10s with pause for scrolling, videos handled by onEnded)
   useEffect(() => {
     if (ads.length <= 1) return;
-    const current = ads[adIdx];
-    if (!current || current.type === 'video') return;
+    if (!currentAd || currentAd.type === 'video') return;
     
     // Reset scroll position when ad changes
     setScrollPosition(0);
@@ -106,7 +108,7 @@ export default function QueueDisplay() {
     }, 10000);
     
     return () => clearTimeout(t);
-  }, [adIdx, ads]);
+  }, [adIdx, ads, currentAd]);
 
   useEffect(() => {
     if (adIdx >= ads.length) setAdIdx(0);
@@ -124,7 +126,6 @@ export default function QueueDisplay() {
   }, [tickets]);
 
   const waitingCount = (d: QueueDept) => tickets.filter(t => t.dept === d && t.status === 'waiting').length;
-  const currentAd = ads[adIdx];
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6 flex flex-col gap-4">
