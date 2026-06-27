@@ -20,6 +20,8 @@ import {
 } from '@/lib/queueStore';
 import { ExternalLink, PhoneCall, SkipForward, CheckCircle2, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BarcodeScanner } from '@/components/common/BarcodeScanner';
+import { QrCode, ScanLine, Search } from 'lucide-react';
 
 const DEPT_LABELS: Record<QueueDept, string> = {
   doctor: 'Doctor',
@@ -40,6 +42,15 @@ export default function Queue() {
     pharmacy: 'Pharmacy',
     triage: 'Triage 1',
   });
+
+  // QR / number-based check-in
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [lookupCode, setLookupCode] = useState('');
+  const [lookupResult, setLookupResult] = useState<
+    | { ok: true; patientId: string; patientName: string; appointmentId?: string; appointmentTime?: string }
+    | { ok: false; message: string }
+    | null
+  >(null);
 
   const todaysAppointments = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -74,6 +85,66 @@ export default function Queue() {
 
   const callerName = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
 
+  const extractPatientId = (raw: string) => {
+    const s = raw.trim();
+    if (!s) return '';
+    const prefixMatch = s.match(/MPMS-P[:\-]([\w-]+)/i);
+    if (prefixMatch) return prefixMatch[1];
+    try {
+      const url = new URL(s);
+      const pid = url.searchParams.get('pid') || url.searchParams.get('patientId');
+      if (pid) return pid;
+    } catch { /* not a url */ }
+    return s;
+  };
+
+  const performLookup = (raw: string) => {
+    const pid = extractPatientId(raw);
+    const patient = mockPatients.find(p => p.id === pid);
+    if (!patient) {
+      setLookupResult({ ok: false, message: `No patient found for "${raw}"` });
+      toast({ title: 'Patient not found', description: raw, variant: 'destructive' });
+      return;
+    }
+    const appt = todaysAppointments.find(a => a.patientId === patient.id);
+    setLookupResult({
+      ok: true,
+      patientId: patient.id,
+      patientName: `${patient.firstName} ${patient.lastName}`,
+      appointmentId: appt?.id,
+      appointmentTime: appt?.appointmentTime,
+    });
+    toast({
+      title: appt ? 'Appointment matched' : 'Patient found (no appointment today)',
+      description: `${patient.firstName} ${patient.lastName}${appt ? ` · ${appt.appointmentTime}` : ''}`,
+    });
+  };
+
+  const confirmCheckIn = (targetDept: QueueDept) => {
+    if (!lookupResult || !lookupResult.ok) return;
+    const appt = lookupResult.appointmentId
+      ? mockAppointments.find(a => a.id === lookupResult.appointmentId)
+      : undefined;
+    if (appt) {
+      appt.status = 'confirmed';
+      appt.updatedAt = new Date().toISOString();
+    }
+    const ticket = issueTicket({
+      dept: targetDept,
+      patientId: lookupResult.patientId,
+      patientName: lookupResult.patientName,
+      appointmentId: lookupResult.appointmentId,
+    });
+    toast({
+      title: `Checked in · ${ticket.code}`,
+      description: appt
+        ? `${lookupResult.patientName} — appointment ${appt.appointmentTime} confirmed.`
+        : `${lookupResult.patientName} added to ${DEPT_LABELS[targetDept]} (walk-in).`,
+    });
+    setLookupCode('');
+    setLookupResult(null);
+  };
+
   const handleCallNext = (d: QueueDept) => {
     const r = room[d].trim() || DEPT_LABELS[d];
     const next = callNext(d, r, callerName);
@@ -103,6 +174,7 @@ export default function Queue() {
       <Tabs defaultValue="checkin" className="space-y-4">
         <TabsList>
           <TabsTrigger value="checkin">Check-in</TabsTrigger>
+          <TabsTrigger value="qr">QR / Number Check-in</TabsTrigger>
           <TabsTrigger value="call">Call Next</TabsTrigger>
         </TabsList>
 
@@ -184,6 +256,101 @@ export default function Queue() {
               })}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="qr">
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <QrCode className="w-5 h-5" /> Scan Patient QR or Enter Number
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button type="button" className="w-full" onClick={() => setScannerOpen(true)}>
+                  <ScanLine className="w-4 h-4 mr-2" /> Open Camera Scanner
+                </Button>
+
+                <form
+                  className="flex gap-2"
+                  onSubmit={(e) => { e.preventDefault(); performLookup(lookupCode); }}
+                >
+                  <Input
+                    value={lookupCode}
+                    onChange={(e) => setLookupCode(e.target.value)}
+                    placeholder="Patient number or QR text (e.g. p-001 / MPMS-P:p-001)"
+                    autoFocus
+                  />
+                  <Button type="submit" variant="outline">
+                    <Search className="w-4 h-4 mr-2" /> Lookup
+                  </Button>
+                </form>
+
+                <p className="text-xs text-muted-foreground">
+                  Tip: QR codes encoded as <code>MPMS-P:&lt;patientId&gt;</code> or URLs containing
+                  <code> ?pid=&lt;patientId&gt;</code> are recognised automatically.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Match & Confirm</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {!lookupResult && (
+                  <p className="text-sm text-muted-foreground">
+                    Scan a patient QR or enter a patient number to load their appointment.
+                  </p>
+                )}
+                {lookupResult?.ok === false && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                    {lookupResult.message}
+                  </div>
+                )}
+                {lookupResult?.ok === true && (
+                  <div className="space-y-3">
+                    <div className="rounded-md border p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold">{lookupResult.patientName}</div>
+                          <div className="text-xs text-muted-foreground">ID: {lookupResult.patientId}</div>
+                        </div>
+                        {lookupResult.appointmentId ? (
+                          <Badge>Appt {lookupResult.appointmentTime}</Badge>
+                        ) : (
+                          <Badge variant="secondary">Walk-in</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Send to</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button variant="outline" onClick={() => confirmCheckIn('triage')}>
+                          <CheckCircle2 className="w-4 h-4 mr-1" /> Triage
+                        </Button>
+                        <Button variant="outline" onClick={() => confirmCheckIn('doctor')}>
+                          <CheckCircle2 className="w-4 h-4 mr-1" /> Doctor
+                        </Button>
+                        <Button variant="outline" onClick={() => confirmCheckIn('pharmacy')}>
+                          <CheckCircle2 className="w-4 h-4 mr-1" /> Pharmacy
+                        </Button>
+                      </div>
+                    </div>
+                    <Button variant="ghost" className="w-full" onClick={() => { setLookupResult(null); setLookupCode(''); }}>
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <BarcodeScanner
+            open={scannerOpen}
+            onClose={() => setScannerOpen(false)}
+            onScan={(code) => { setLookupCode(code); performLookup(code); }}
+          />
         </TabsContent>
 
         <TabsContent value="call">
