@@ -258,9 +258,6 @@ export default function Queue() {
           </div>
         </TabsContent>
 
-        <TabsContent value="call">
-        </TabsContent>
-
         <TabsContent value="qr">
           <div className="grid md:grid-cols-2 gap-4">
             <Card>
@@ -356,7 +353,7 @@ export default function Queue() {
           />
         </TabsContent>
 
-        <TabsContent value="call-placeholder" hidden>
+        <TabsContent value="call">
           <div className="grid md:grid-cols-3 gap-4">
             {(['doctor', 'triage', 'pharmacy'] as QueueDept[]).map(d => {
               const items = byDept(d);
