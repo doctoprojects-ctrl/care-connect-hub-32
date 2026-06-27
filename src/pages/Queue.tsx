@@ -259,6 +259,104 @@ export default function Queue() {
         </TabsContent>
 
         <TabsContent value="call">
+        </TabsContent>
+
+        <TabsContent value="qr">
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <QrCode className="w-5 h-5" /> Scan Patient QR or Enter Number
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button type="button" className="w-full" onClick={() => setScannerOpen(true)}>
+                  <ScanLine className="w-4 h-4 mr-2" /> Open Camera Scanner
+                </Button>
+
+                <form
+                  className="flex gap-2"
+                  onSubmit={(e) => { e.preventDefault(); performLookup(lookupCode); }}
+                >
+                  <Input
+                    value={lookupCode}
+                    onChange={(e) => setLookupCode(e.target.value)}
+                    placeholder="Patient number or QR text (e.g. p-001 / MPMS-P:p-001)"
+                    autoFocus
+                  />
+                  <Button type="submit" variant="outline">
+                    <Search className="w-4 h-4 mr-2" /> Lookup
+                  </Button>
+                </form>
+
+                <p className="text-xs text-muted-foreground">
+                  Tip: QR codes encoded as <code>MPMS-P:&lt;patientId&gt;</code> or URLs containing
+                  <code> ?pid=&lt;patientId&gt;</code> are recognised automatically.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Match & Confirm</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {!lookupResult && (
+                  <p className="text-sm text-muted-foreground">
+                    Scan a patient QR or enter a patient number to load their appointment.
+                  </p>
+                )}
+                {lookupResult && !lookupResult.ok && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                    {lookupResult.message}
+                  </div>
+                )}
+                {lookupResult && lookupResult.ok && (
+                  <div className="space-y-3">
+                    <div className="rounded-md border p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold">{lookupResult.patientName}</div>
+                          <div className="text-xs text-muted-foreground">ID: {lookupResult.patientId}</div>
+                        </div>
+                        {lookupResult.appointmentId ? (
+                          <Badge>Appt {lookupResult.appointmentTime}</Badge>
+                        ) : (
+                          <Badge variant="secondary">Walk-in</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Send to</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button variant="outline" onClick={() => confirmCheckIn('triage')}>
+                          <CheckCircle2 className="w-4 h-4 mr-1" /> Triage
+                        </Button>
+                        <Button variant="outline" onClick={() => confirmCheckIn('doctor')}>
+                          <CheckCircle2 className="w-4 h-4 mr-1" /> Doctor
+                        </Button>
+                        <Button variant="outline" onClick={() => confirmCheckIn('pharmacy')}>
+                          <CheckCircle2 className="w-4 h-4 mr-1" /> Pharmacy
+                        </Button>
+                      </div>
+                    </div>
+                    <Button variant="ghost" className="w-full" onClick={() => { setLookupResult(null); setLookupCode(''); }}>
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <BarcodeScanner
+            open={scannerOpen}
+            onClose={() => setScannerOpen(false)}
+            onScan={(code) => { setLookupCode(code); performLookup(code); }}
+          />
+        </TabsContent>
+
+        <TabsContent value="call-placeholder" hidden>
           <div className="grid md:grid-cols-3 gap-4">
             {(['doctor', 'triage', 'pharmacy'] as QueueDept[]).map(d => {
               const items = byDept(d);
