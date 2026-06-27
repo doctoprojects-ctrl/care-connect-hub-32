@@ -20,7 +20,7 @@ export const PINLogin = () => {
     setIsLoading(true);
 
     try {
-      const success = login(username, pin);
+      const success = await login(username, pin);
       
       if (success) {
         toast({

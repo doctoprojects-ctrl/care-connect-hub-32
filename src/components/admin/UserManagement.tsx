@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,13 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { mockUsers } from '@/store/mockData';
 import { User } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { UserPlus, Edit, Trash2 } from 'lucide-react';
 
 export const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
@@ -25,34 +25,60 @@ export const UserManagement = () => {
     pin: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingUser) {
-      // Update existing user
-      setUsers(prev => prev.map(user => 
-        user.id === editingUser.id 
-          ? { ...user, ...formData, updatedAt: new Date().toISOString() }
-          : user
-      ));
-      toast({
-        title: "User Updated",
-        description: `${formData.firstName} ${formData.lastName} has been updated successfully.`,
-      });
-    } else {
-      // Create new user
-      const newUser: User = {
-        id: (users.length + 1).toString(),
-        ...formData,
-        isActive: true,
-      };
-      setUsers(prev => [...prev, newUser]);
-      toast({
-        title: "User Created",
-        description: `${formData.firstName} ${formData.lastName} has been added to the system.`,
-      });
+  const mapRow = (r: any): User => ({
+    id: r.id,
+    firstName: r.first_name,
+    lastName: r.last_name,
+    email: r.email ?? '',
+    role: r.role,
+    pin: r.pin,
+    isActive: r.is_active,
+  });
+
+  const loadUsers = async () => {
+    const { data, error } = await supabase
+      .from('app_users')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) {
+      toast({ title: 'Error loading users', description: error.message, variant: 'destructive' });
+      return;
     }
-    
+    setUsers((data ?? []).map(mapRow));
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      role: formData.role,
+      pin: formData.pin,
+    };
+
+    if (editingUser) {
+      const { error } = await supabase.from('app_users').update(payload).eq('id', editingUser.id);
+      if (error) {
+        toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+        return;
+      }
+      toast({ title: 'User Updated', description: `${formData.firstName} ${formData.lastName} has been updated.` });
+    } else {
+      const { error } = await supabase.from('app_users').insert(payload);
+      if (error) {
+        toast({ title: 'Create failed', description: error.message, variant: 'destructive' });
+        return;
+      }
+      toast({ title: 'User Created', description: `${formData.firstName} ${formData.lastName} has been added.` });
+    }
+
+    await loadUsers();
     resetForm();
     setIsDialogOpen(false);
   };
@@ -80,21 +106,25 @@ export const UserManagement = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (userId: string) => {
-    setUsers(prev => prev.filter(user => user.id !== userId));
-    toast({
-      title: "User Deleted",
-      description: "User has been removed from the system.",
-      variant: "destructive",
-    });
+  const handleDelete = async (userId: string) => {
+    const { error } = await supabase.from('app_users').delete().eq('id', userId);
+    if (error) {
+      toast({ title: 'Delete failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    await loadUsers();
+    toast({ title: 'User Deleted', description: 'User has been removed from the system.', variant: 'destructive' });
   };
 
-  const toggleUserStatus = (userId: string) => {
-    setUsers(prev => prev.map(user => 
-      user.id === userId 
-        ? { ...user, isActive: !user.isActive }
-        : user
-    ));
+  const toggleUserStatus = async (userId: string) => {
+    const u = users.find(x => x.id === userId);
+    if (!u) return;
+    const { error } = await supabase.from('app_users').update({ is_active: !u.isActive }).eq('id', userId);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    await loadUsers();
   };
 
   const getRoleBadgeVariant = (role: User['role']) => {
