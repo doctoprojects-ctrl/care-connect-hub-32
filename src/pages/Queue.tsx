@@ -306,12 +306,12 @@ export default function Queue() {
                     Scan a patient QR or enter a patient number to load their appointment.
                   </p>
                 )}
-                {lookupResult && !lookupResult.ok && (
+                {lookupResult?.ok === false && (
                   <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
                     {lookupResult.message}
                   </div>
                 )}
-                {lookupResult && lookupResult.ok && (
+                {lookupResult?.ok === true && (
                   <div className="space-y-3">
                     <div className="rounded-md border p-3">
                       <div className="flex items-center justify-between">
