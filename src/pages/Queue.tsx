@@ -57,7 +57,7 @@ export default function Queue() {
     return mockAppointments.filter(a => a.appointmentDate === today);
   }, []);
 
-  const handleIssue = (e: React.FormEvent) => {
+  const handleIssue = async (e: React.FormEvent) => {
     e.preventDefault();
     const patient = patientId ? mockPatients.find(p => p.id === patientId) : null;
     const name = patient ? `${patient.firstName} ${patient.lastName}` : walkInName.trim();
@@ -68,12 +68,16 @@ export default function Queue() {
     const appt = patient
       ? todaysAppointments.find(a => a.patientId === patient.id)
       : undefined;
-    const ticket = issueTicket({
+    const ticket = await issueTicket({
       dept,
       patientId: patient?.id,
       patientName: name,
       appointmentId: appt?.id,
     });
+    if (!ticket) {
+      toast({ title: 'Could not issue ticket', variant: 'destructive' });
+      return;
+    }
     if (appt) {
       appt.status = 'confirmed';
       appt.updatedAt = new Date().toISOString();
@@ -120,7 +124,7 @@ export default function Queue() {
     });
   };
 
-  const confirmCheckIn = (targetDept: QueueDept) => {
+  const confirmCheckIn = async (targetDept: QueueDept) => {
     if (!lookupResult || !lookupResult.ok) return;
     const appt = lookupResult.appointmentId
       ? mockAppointments.find(a => a.id === lookupResult.appointmentId)
@@ -129,12 +133,16 @@ export default function Queue() {
       appt.status = 'confirmed';
       appt.updatedAt = new Date().toISOString();
     }
-    const ticket = issueTicket({
+    const ticket = await issueTicket({
       dept: targetDept,
       patientId: lookupResult.patientId,
       patientName: lookupResult.patientName,
       appointmentId: lookupResult.appointmentId,
     });
+    if (!ticket) {
+      toast({ title: 'Could not issue ticket', variant: 'destructive' });
+      return;
+    }
     toast({
       title: `Checked in · ${ticket.code}`,
       description: appt
@@ -145,9 +153,9 @@ export default function Queue() {
     setLookupResult(null);
   };
 
-  const handleCallNext = (d: QueueDept) => {
+  const handleCallNext = async (d: QueueDept) => {
     const r = room[d].trim() || DEPT_LABELS[d];
-    const next = callNext(d, r, callerName);
+    const next = await callNext(d, r, callerName);
     if (!next) {
       toast({ title: 'Queue empty', description: `No waiting patients for ${DEPT_LABELS[d]}.` });
       return;
