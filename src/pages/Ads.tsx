@@ -31,7 +31,7 @@ export default function Ads() {
     setBusy(true);
     try {
       const dataUrl = await fileToDataUrl(file);
-      addAd({
+      const created = await addAd({
         title: title.trim(),
         type,
         dataUrl,
@@ -39,6 +39,7 @@ export default function Ads() {
         uploadedByName: user ? `${user.firstName} ${user.lastName}` : 'Unknown',
         active: true,
       });
+      if (!created) throw new Error('Upload failed');
       toast({ title: 'Ad uploaded', description: `${title} is now on the display.` });
       setTitle('');
       setFile(null);
