@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import {
   mockPatients,
   mockDoctors,
@@ -127,12 +128,29 @@ export async function hydrateCashUps() {
   })));
 }
 
+const VERSION_EVT = 'mpms:data-version';
+let _version = 0;
+function bumpVersion() {
+  _version++;
+  window.dispatchEvent(new CustomEvent(VERSION_EVT));
+}
+export function useDataVersion(): number {
+  const [v, setV] = useState(_version);
+  useEffect(() => {
+    const h = () => setV(_version);
+    window.addEventListener(VERSION_EVT, h);
+    return () => window.removeEventListener(VERSION_EVT, h);
+  }, []);
+  return v;
+}
+
 export async function hydrateAll() {
   await Promise.all([
     hydratePatients(), hydrateDoctors(), hydrateAppointments(),
     hydrateServices(), hydratePharmacy(), hydrateEquipment(),
     hydrateInvoices(), hydrateCredits(), hydrateCashUps(),
   ]);
+  bumpVersion();
 }
 
 // ==== Write helpers (mirror mock mutations into Supabase) ====
@@ -177,9 +195,15 @@ export function useSupabaseBootstrap() {
     const ch = supabase
       .channel('appointments_rt')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
-        hydrateAppointments();
+        hydrateAppointments().then(bumpVersion);
       })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const ch2 = supabase
+      .channel('patients_rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => {
+        hydratePatients().then(bumpVersion);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); supabase.removeChannel(ch2); };
   }, []);
 }

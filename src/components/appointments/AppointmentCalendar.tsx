@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Clock, User } from 'lucide-react';
 import { Appointment } from '@/types';
 import { mockAppointments, mockPatients, mockDoctors } from '@/store/mockData';
+import { useDataVersion } from '@/lib/supabaseSync';
 
 interface AppointmentCalendarProps {
   onAddAppointment?: () => void;
@@ -13,8 +14,9 @@ interface AppointmentCalendarProps {
 }
 
 export function AppointmentCalendar({ onAddAppointment, onAppointmentSelect }: AppointmentCalendarProps) {
+  useDataVersion();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [appointments] = useState<Appointment[]>(mockAppointments);
+  const appointments = mockAppointments;
 
   const getAppointmentsForDate = (date: Date) => {
     const dateString = date.toISOString().split('T')[0];
