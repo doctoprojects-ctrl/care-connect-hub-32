@@ -103,6 +103,20 @@ export default function Queue() {
   };
 
   const performLookup = (raw: string) => {
+    const trimmed = raw.trim();
+    // If a booking URL was scanned, redirect straight to self-booking.
+    if (/\/book(\?|$|\/)/i.test(trimmed) || /^https?:\/\//i.test(trimmed) && trimmed.includes('/book')) {
+      try {
+        const url = new URL(trimmed);
+        // Same-origin? Route internally, else open new tab
+        if (url.origin === window.location.origin) {
+          window.location.href = url.pathname + url.search;
+        } else {
+          window.open(trimmed, '_blank', 'noopener');
+        }
+        return;
+      } catch { /* fall through */ }
+    }
     const pid = extractPatientId(raw);
     const patient = mockPatients.find(p => p.id === pid);
     if (!patient) {
