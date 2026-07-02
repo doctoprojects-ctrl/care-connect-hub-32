@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/Header";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PINLogin } from "@/components/auth/PINLogin";
+import { useSupabaseBootstrap } from "@/lib/supabaseSync";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import PatientDetail from "./pages/PatientDetail";
@@ -35,6 +36,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
+  useSupabaseBootstrap();
 
   if (!isAuthenticated) {
     return <PINLogin />;
