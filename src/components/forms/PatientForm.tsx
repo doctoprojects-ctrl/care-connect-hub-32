@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Patient } from '@/types';
 import { toast } from 'sonner';
+import { upsertPatientDb } from '@/lib/supabaseSync';
 
 const patientSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -52,9 +53,9 @@ export function PatientForm({ open, onOpenChange, onSubmit, patient }: PatientFo
     },
   });
 
-  const handleSubmit = (data: PatientFormData) => {
+  const handleSubmit = async (data: PatientFormData) => {
     const newPatient: Patient = {
-      id: patient?.id || `patient-${Date.now()}`,
+      id: patient?.id || crypto.randomUUID(),
       firstName: data.firstName,
       lastName: data.lastName,
       dateOfBirth: data.dateOfBirth,
@@ -78,6 +79,7 @@ export function PatientForm({ open, onOpenChange, onSubmit, patient }: PatientFo
     };
 
     onSubmit(newPatient);
+    try { await upsertPatientDb(newPatient); } catch (e) { console.error(e); }
     toast.success(`Patient ${isEdit ? 'updated' : 'added'} successfully`);
     onOpenChange(false);
     form.reset();

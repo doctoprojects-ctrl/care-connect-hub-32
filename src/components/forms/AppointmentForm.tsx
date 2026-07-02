@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Appointment } from '@/types';
 import { mockPatients, mockDoctors, mockServicePrices, mockInvoices } from '@/store/mockData';
 import { toast } from 'sonner';
+import { upsertAppointmentDb, upsertInvoiceDb } from '@/lib/supabaseSync';
 
 const appointmentSchema = z.object({
   patientId: z.string().min(1, 'Please select a patient'),
@@ -67,9 +68,9 @@ export function AppointmentForm({
     },
   });
 
-  const handleSubmit = (data: AppointmentFormData) => {
+  const handleSubmit = async (data: AppointmentFormData) => {
     const newAppointment: Appointment = {
-      id: appointment?.id || `appointment-${Date.now()}`,
+      id: appointment?.id || crypto.randomUUID(),
       patientId: data.patientId,
       doctorId: data.doctorId,
       appointmentDate: data.appointmentDate,
@@ -83,6 +84,7 @@ export function AppointmentForm({
     };
 
     onSubmit(newAppointment);
+    try { await upsertAppointmentDb(newAppointment); } catch (e) { console.error(e); }
 
     // Auto-generate an unpaid invoice for the booked service so the patient
     // can pay either at Reception or at the Pharmacy cashier.
@@ -91,8 +93,8 @@ export function AppointmentForm({
       const p = mockPatients.find((x) => x.id === data.patientId);
       if (sv && p) {
         const num = mockInvoices.length + 1;
-        mockInvoices.unshift({
-          id: `inv-${Date.now()}`,
+        const inv = {
+          id: crypto.randomUUID(),
           invoiceNumber: 'INV-' + String(num).padStart(4, '0'),
           patientId: p.id,
           patientName: `${p.firstName} ${p.lastName}`,
@@ -101,9 +103,11 @@ export function AppointmentForm({
           lines: [{ description: sv.name, quantity: 1, unitPrice: sv.price }],
           total: sv.price,
           amountPaid: 0,
-          status: 'unpaid',
+          status: 'unpaid' as const,
           notes: `Auto-billed for appointment on ${data.appointmentDate} ${data.appointmentTime}`,
-        });
+        };
+        mockInvoices.unshift(inv);
+        try { await upsertInvoiceDb(inv); } catch (e) { console.error(e); }
         toast.success(`Appointment booked. Invoice INV-${String(num).padStart(4, '0')} (${sv.name} - $${sv.price}) created. Payable at Reception or Pharmacy Cashier.`);
       } else {
         toast.success('Appointment booked successfully');

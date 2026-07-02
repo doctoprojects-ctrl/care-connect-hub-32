@@ -203,9 +203,7 @@ export default function QueueDisplay() {
           )}
           {currentAd && currentAd.type === 'image' && (
             <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur px-4 py-2 rounded-lg">
-              <p className="text-sm font-medium">
-                {currentAd.description || 'Scroll message'}
-              </p>
+              <p className="text-sm font-medium">{currentAd.title}</p>
             </div>
           )}
         </div>

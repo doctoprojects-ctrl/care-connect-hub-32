@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type QueueDept = 'doctor' | 'pharmacy' | 'triage';
 export type TicketStatus = 'waiting' | 'called' | 'serving' | 'done' | 'skipped';
@@ -20,110 +21,100 @@ export interface QueueTicket {
   calledBy?: string;
 }
 
-const KEY = 'mpms.queue.tickets.v1';
-const EVT = 'mpms:queue-updated';
-
-const DEPT_PREFIX: Record<QueueDept, string> = {
-  doctor: 'DR',
-  pharmacy: 'PH',
-  triage: 'TR',
-};
-
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+function rowToTicket(r: any): QueueTicket {
+  return {
+    id: r.id,
+    dept: r.dept,
+    number: r.number,
+    code: r.code,
+    patientId: r.patient_id ?? undefined,
+    patientName: r.patient_name,
+    appointmentId: r.appointment_id ?? undefined,
+    status: r.status,
+    room: r.room ?? undefined,
+    createdAt: r.created_at,
+    calledAt: r.called_at ?? undefined,
+    servedAt: r.served_at ?? undefined,
+    doneAt: r.done_at ?? undefined,
+    calledBy: r.called_by ?? undefined,
+  };
 }
 
-function read(): QueueTicket[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as QueueTicket[];
-  } catch {
-    return [];
-  }
+function todayStartISO() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
 }
 
-function write(tickets: QueueTicket[]) {
-  localStorage.setItem(KEY, JSON.stringify(tickets));
-  window.dispatchEvent(new CustomEvent(EVT));
-}
-
-export function getTodaysTickets(): QueueTicket[] {
-  const today = todayKey();
-  return read().filter(t => t.createdAt.slice(0, 10) === today);
-}
-
-export function getAllTickets(): QueueTicket[] {
-  return read();
-}
-
-export function issueTicket(input: {
+export async function issueTicket(input: {
   dept: QueueDept;
   patientName: string;
   patientId?: string;
   appointmentId?: string;
-}): QueueTicket {
-  const tickets = read();
-  const today = todayKey();
-  const sameDept = tickets.filter(
-    t => t.dept === input.dept && t.createdAt.slice(0, 10) === today
-  );
-  const number = sameDept.length + 1;
-  const code = `${DEPT_PREFIX[input.dept]}-${String(number).padStart(2, '0')}`;
-  const ticket: QueueTicket = {
-    id: `tk-${Date.now()}`,
-    dept: input.dept,
-    number,
-    code,
-    patientId: input.patientId,
-    patientName: input.patientName,
-    appointmentId: input.appointmentId,
-    status: 'waiting',
-    createdAt: new Date().toISOString(),
-  };
-  write([...tickets, ticket]);
-  return ticket;
+}): Promise<QueueTicket | null> {
+  const { data, error } = await supabase.rpc('issue_queue_ticket', {
+    p_dept: input.dept,
+    p_patient_name: input.patientName,
+    p_patient_id: input.patientId ?? null,
+    p_appointment_id: input.appointmentId ?? null,
+  });
+  if (error || !data) {
+    console.error('issueTicket', error);
+    return null;
+  }
+  return rowToTicket(Array.isArray(data) ? data[0] : data);
 }
 
-export function updateTicket(id: string, patch: Partial<QueueTicket>) {
-  const tickets = read().map(t => (t.id === id ? { ...t, ...patch } : t));
-  write(tickets);
-}
-
-export function callNext(dept: QueueDept, room: string, calledBy?: string): QueueTicket | null {
-  const tickets = read();
-  const today = todayKey();
-  const next = tickets.find(
-    t => t.dept === dept && t.status === 'waiting' && t.createdAt.slice(0, 10) === today
-  );
+export async function callNext(dept: QueueDept, room: string, calledBy?: string): Promise<QueueTicket | null> {
+  const { data: waiting } = await supabase
+    .from('queue_tickets')
+    .select('*')
+    .eq('dept', dept)
+    .eq('status', 'waiting')
+    .gte('created_at', todayStartISO())
+    .order('created_at', { ascending: true })
+    .limit(1);
+  const next = waiting?.[0];
   if (!next) return null;
-  const now = new Date().toISOString();
-  const updated: QueueTicket = { ...next, status: 'called', room, calledAt: now, calledBy };
-  write(tickets.map(t => (t.id === next.id ? updated : t)));
-  return updated;
+  const { data: updated } = await supabase
+    .from('queue_tickets')
+    .update({ status: 'called', room, called_by: calledBy, called_at: new Date().toISOString() })
+    .eq('id', next.id)
+    .select()
+    .single();
+  return updated ? rowToTicket(updated) : null;
 }
 
-export function markServing(id: string) {
-  updateTicket(id, { status: 'serving', servedAt: new Date().toISOString() });
+export async function markServing(id: string) {
+  await supabase.from('queue_tickets').update({ status: 'serving', served_at: new Date().toISOString() }).eq('id', id);
 }
-
-export function markDone(id: string) {
-  updateTicket(id, { status: 'done', doneAt: new Date().toISOString() });
+export async function markDone(id: string) {
+  await supabase.from('queue_tickets').update({ status: 'done', done_at: new Date().toISOString() }).eq('id', id);
 }
-
-export function skipTicket(id: string) {
-  updateTicket(id, { status: 'skipped' });
+export async function skipTicket(id: string) {
+  await supabase.from('queue_tickets').update({ status: 'skipped' }).eq('id', id);
 }
 
 export function useQueueTickets(): QueueTicket[] {
-  const [tickets, setTickets] = useState<QueueTicket[]>(() => getTodaysTickets());
+  const [tickets, setTickets] = useState<QueueTicket[]>([]);
   useEffect(() => {
-    const refresh = () => setTickets(getTodaysTickets());
-    window.addEventListener(EVT, refresh);
-    window.addEventListener('storage', refresh);
+    let mounted = true;
+    const load = async () => {
+      const { data } = await supabase
+        .from('queue_tickets')
+        .select('*')
+        .gte('created_at', todayStartISO())
+        .order('created_at', { ascending: true });
+      if (mounted) setTickets((data ?? []).map(rowToTicket));
+    };
+    load();
+    const channel = supabase
+      .channel('queue_tickets_rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'queue_tickets' }, () => load())
+      .subscribe();
     return () => {
-      window.removeEventListener(EVT, refresh);
-      window.removeEventListener('storage', refresh);
+      mounted = false;
+      supabase.removeChannel(channel);
     };
   }, []);
   return tickets;

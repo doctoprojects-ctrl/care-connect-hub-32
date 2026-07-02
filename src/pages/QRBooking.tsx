@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarDays, Clock, User, Phone, Mail } from 'lucide-react';
-import { mockDoctors } from '@/store/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export default function QRBooking() {
+  const [doctors, setDoctors] = useState<Array<{ id: string; firstName: string; lastName: string; specialization: string }>>([]);
+  const [submitting, setSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [appointmentType, setAppointmentType] = useState('');
+
+  useEffect(() => {
+    supabase.from('doctors').select('*').eq('is_active', true).then(({ data }) => {
+      setDoctors((data ?? []).map((d: any) => ({
+        id: d.id, firstName: d.first_name, lastName: d.last_name, specialization: d.specialization ?? '',
+      })));
+    });
+  }, []);
   
   const [patientInfo, setPatientInfo] = useState({
     firstName: '',
@@ -36,18 +47,39 @@ export default function QRBooking() {
     { value: 'procedure', label: 'Medical Procedure' }
   ];
 
-  const handleBooking = () => {
-    const appointmentData = {
-      patient: patientInfo,
-      doctorId: selectedDoctor,
-      date: selectedDate,
-      time: selectedTime,
-      type: appointmentType
-    };
-    
-    console.log('Booking appointment:', appointmentData);
-    // TODO: Submit booking to backend
-    alert('Appointment booking request submitted! You will receive a confirmation shortly.');
+  const handleBooking = async () => {
+    if (!selectedDate) return;
+    setSubmitting(true);
+    try {
+      const { data: patient, error: pErr } = await supabase.from('patients').insert({
+        first_name: patientInfo.firstName,
+        last_name: patientInfo.lastName,
+        phone: patientInfo.phone,
+        email: patientInfo.email,
+        date_of_birth: patientInfo.dateOfBirth || null,
+      }).select().single();
+      if (pErr || !patient) throw pErr ?? new Error('Patient create failed');
+
+      const { error: aErr } = await supabase.from('appointments').insert({
+        patient_id: patient.id,
+        doctor_id: selectedDoctor,
+        appointment_date: selectedDate.toISOString().split('T')[0],
+        appointment_time: selectedTime,
+        duration: 30,
+        type: appointmentType,
+        status: 'scheduled',
+        notes: patientInfo.notes || null,
+      });
+      if (aErr) throw aErr;
+
+      toast({ title: 'Appointment requested', description: 'Reception will confirm shortly.' });
+      setPatientInfo({ firstName: '', lastName: '', phone: '', email: '', dateOfBirth: '', notes: '' });
+      setSelectedDate(undefined); setSelectedTime(''); setSelectedDoctor(''); setAppointmentType('');
+    } catch (e: any) {
+      toast({ title: 'Booking failed', description: e?.message ?? 'Please try again', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const isFormValid = 
@@ -203,7 +235,7 @@ export default function QRBooking() {
                       <SelectValue placeholder="Select a doctor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockDoctors.map((doctor) => (
+                      {doctors.map((doctor) => (
                         <SelectItem key={doctor.id} value={doctor.id}>
                           {doctor.firstName} {doctor.lastName} - {doctor.specialization}
                         </SelectItem>
@@ -231,9 +263,9 @@ export default function QRBooking() {
                 <Button 
                   className="w-full" 
                   onClick={handleBooking}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || submitting}
                 >
-                  Book Appointment
+                  {submitting ? 'Booking…' : 'Book Appointment'}
                 </Button>
               </CardContent>
             </Card>

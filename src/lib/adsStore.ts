@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type AdMediaType = 'image' | 'video';
 
@@ -13,56 +14,55 @@ export interface AdItem {
   active: boolean;
 }
 
-const KEY = 'mpms.ads.v1';
-const EVT = 'mpms:ads-updated';
-
-function read(): AdItem[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as AdItem[];
-  } catch {
-    return [];
-  }
-}
-
-function write(items: AdItem[]) {
-  localStorage.setItem(KEY, JSON.stringify(items));
-  window.dispatchEvent(new CustomEvent(EVT));
-}
-
-export function getAds(): AdItem[] {
-  return read();
-}
-
-export function addAd(item: Omit<AdItem, 'id' | 'uploadedAt'>): AdItem {
-  const ad: AdItem = {
-    ...item,
-    id: `ad-${Date.now()}`,
-    uploadedAt: new Date().toISOString(),
+function rowToAd(r: any): AdItem {
+  return {
+    id: r.id,
+    title: r.title,
+    type: (r.media_type as AdMediaType) ?? 'image',
+    dataUrl: r.media_url,
+    uploadedById: r.uploaded_by_id ?? '',
+    uploadedByName: r.uploaded_by ?? 'Unknown',
+    uploadedAt: r.created_at,
+    active: !!r.is_active,
   };
-  write([ad, ...read()]);
-  return ad;
 }
 
-export function toggleAd(id: string) {
-  write(read().map(a => (a.id === id ? { ...a, active: !a.active } : a)));
+export async function addAd(item: Omit<AdItem, 'id' | 'uploadedAt'>): Promise<AdItem | null> {
+  const { data, error } = await supabase.from('ads').insert({
+    title: item.title,
+    media_type: item.type,
+    media_url: item.dataUrl,
+    uploaded_by: item.uploadedByName,
+    uploaded_by_id: item.uploadedById,
+    is_active: item.active,
+  }).select().single();
+  if (error || !data) { console.error('addAd', error); return null; }
+  return rowToAd(data);
 }
 
-export function deleteAd(id: string) {
-  write(read().filter(a => a.id !== id));
+export async function toggleAd(id: string) {
+  const { data } = await supabase.from('ads').select('is_active').eq('id', id).single();
+  if (!data) return;
+  await supabase.from('ads').update({ is_active: !data.is_active }).eq('id', id);
+}
+
+export async function deleteAd(id: string) {
+  await supabase.from('ads').delete().eq('id', id);
 }
 
 export function useAds(): AdItem[] {
-  const [ads, setAds] = useState<AdItem[]>(() => read());
+  const [ads, setAds] = useState<AdItem[]>([]);
   useEffect(() => {
-    const refresh = () => setAds(read());
-    window.addEventListener(EVT, refresh);
-    window.addEventListener('storage', refresh);
-    return () => {
-      window.removeEventListener(EVT, refresh);
-      window.removeEventListener('storage', refresh);
+    let mounted = true;
+    const load = async () => {
+      const { data } = await supabase.from('ads').select('*').order('created_at', { ascending: false });
+      if (mounted) setAds((data ?? []).map(rowToAd));
     };
+    load();
+    const channel = supabase.channel('ads_rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, () => load())
+      .subscribe();
+    return () => { mounted = false; supabase.removeChannel(channel); };
   }, []);
   return ads;
 }

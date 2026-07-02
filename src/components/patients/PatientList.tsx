@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Edit, Eye } from 'lucide-react';
 import { Patient } from '@/types';
 import { mockPatients } from '@/store/mockData';
+import { useDataVersion } from '@/lib/supabaseSync';
 
 interface PatientListProps {
   onPatientSelect?: (patient: Patient) => void;
@@ -15,7 +16,8 @@ interface PatientListProps {
 }
 
 export function PatientList({ onPatientSelect, onAddPatient, onEditPatient }: PatientListProps) {
-  const [patients] = useState<Patient[]>(mockPatients);
+  useDataVersion();
+  const patients = mockPatients;
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredPatients = patients.filter(patient =>

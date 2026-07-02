@@ -2,9 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Calendar, UserCheck, Clock } from 'lucide-react';
 import { mockPatients, mockAppointments } from '@/store/mockData';
 import { useT } from '@/contexts/LanguageContext';
+import { useDataVersion } from '@/lib/supabaseSync';
 
 export default function Dashboard() {
   const t = useT();
+  useDataVersion();
   const totalPatients = mockPatients.length;
   const todayAppointments = mockAppointments.filter(apt => 
     apt.appointmentDate === new Date().toISOString().split('T')[0]
