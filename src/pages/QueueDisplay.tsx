@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAds } from '@/lib/adsStore';
 import { QueueDept, useQueueTickets } from '@/lib/queueStore';
 import { clinicConfig } from '@/lib/clinicConfig';
@@ -15,22 +15,11 @@ const DEPT_COLORS: Record<QueueDept, string> = {
   triage: 'from-amber-500 to-amber-700',
 };
 
-// Scroll speed in pixels per second
-const SCROLL_SPEED = 50;
-
 export default function QueueDisplay() {
   const tickets = useQueueTickets();
   const ads = useAds().filter(a => a.active);
   const [adIdx, setAdIdx] = useState(0);
   const [now, setNow] = useState(new Date());
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
-  const lastTimestampRef = useRef<number>(0);
-
-  // Define currentAd BEFORE using it in effects
   const currentAd = ads[adIdx];
 
   useEffect(() => {
@@ -38,75 +27,13 @@ export default function QueueDisplay() {
     return () => clearInterval(t);
   }, []);
 
-  // Scroll animation loop
-  useEffect(() => {
-    if (!currentAd || currentAd.type !== 'image' || !textRef.current || !containerRef.current) return;
-
-    const containerWidth = containerRef.current.offsetWidth;
-    const textWidth = textRef.current.scrollWidth;
-    
-    // Reset scroll position if text is not wide enough to scroll
-    if (textWidth <= containerWidth) {
-      setScrollPosition(0);
-      return;
-    }
-
-    let startTime = performance.now();
-    
-    const animate = (timestamp: number) => {
-      if (!lastTimestampRef.current) {
-        lastTimestampRef.current = timestamp;
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
-
-      const deltaTime = (timestamp - lastTimestampRef.current) / 1000; // in seconds
-      lastTimestampRef.current = timestamp;
-
-      if (!isPaused) {
-        setScrollPosition(prev => {
-          const newPos = prev + (SCROLL_SPEED * deltaTime);
-          // Reset when the entire text has scrolled through
-          if (newPos >= textWidth) {
-            // Pause at the end for 3 seconds before restarting
-            setIsPaused(true);
-            setTimeout(() => {
-              setIsPaused(false);
-              setScrollPosition(0);
-            }, 3000);
-            return textWidth - containerWidth;
-          }
-          return newPos;
-        });
-      }
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      lastTimestampRef.current = 0;
-    };
-  }, [currentAd, isPaused]);
-
-  // Rotate ads (images every 10s with pause for scrolling, videos handled by onEnded)
+  // Rotate ads (images every 10s, videos handled by onEnded)
   useEffect(() => {
     if (ads.length <= 1) return;
     if (!currentAd || currentAd.type === 'video') return;
-    
-    // Reset scroll position when ad changes
-    setScrollPosition(0);
-    setIsPaused(false);
-    
-    // Allow 10 seconds for reading before changing to next ad
     const t = setTimeout(() => {
       setAdIdx(i => (i + 1) % ads.length);
     }, 10000);
-    
     return () => clearTimeout(t);
   }, [adIdx, ads, currentAd]);
 
@@ -167,23 +94,12 @@ export default function QueueDisplay() {
         <div className="lg:col-span-3 rounded-2xl bg-black overflow-hidden flex items-center justify-center relative">
           {currentAd ? (
             currentAd.type === 'image' ? (
-              <div 
-                ref={containerRef}
-                className="w-full h-full relative overflow-hidden flex items-center"
-              >
-                <div 
-                  ref={textRef}
-                  className="absolute whitespace-nowrap text-white text-4xl font-bold px-8"
-                  style={{
-                    transform: `translateX(-${scrollPosition}px)`,
-                    transition: 'none',
-                    willChange: 'transform',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                  }}
-                >
-                  {currentAd.title}
-                </div>
-              </div>
+              <img
+                key={currentAd.id}
+                src={currentAd.dataUrl}
+                alt={currentAd.title}
+                className="w-full h-full object-contain animate-fade-in"
+              />
             ) : (
               <video
                 key={currentAd.id}
@@ -192,7 +108,7 @@ export default function QueueDisplay() {
                 muted
                 playsInline
                 onEnded={() => setAdIdx(i => (i + 1) % Math.max(ads.length, 1))}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             )
           ) : (
@@ -201,8 +117,8 @@ export default function QueueDisplay() {
               <p className="text-sm mt-2">Marketing can upload media from the Advertisements page.</p>
             </div>
           )}
-          {currentAd && currentAd.type === 'image' && (
-            <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur px-4 py-2 rounded-lg">
+          {currentAd && (
+            <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur px-4 py-2 rounded-lg text-center">
               <p className="text-sm font-medium">{currentAd.title}</p>
             </div>
           )}
