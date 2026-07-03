@@ -329,8 +329,8 @@ export default function Queue() {
                 </form>
 
                 <p className="text-xs text-muted-foreground">
-                  Tip: QR codes encoded as <code>MPMS-P:&lt;patientId&gt;</code> or URLs containing
-                  <code> ?pid=&lt;patientId&gt;</code> are recognised automatically.
+                  Tip: Enter the <strong>appointment number</strong> (ID from the Google Sheet), a patient number,
+                  or scan a QR (<code>MPMS-P:&lt;patientId&gt;</code> or booking URL).
                 </p>
               </CardContent>
             </Card>
