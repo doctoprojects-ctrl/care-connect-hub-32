@@ -70,6 +70,8 @@ function clearCache(): void {
   localStorage.removeItem(CACHE_TIMESTAMP_KEY);
 }
 
+// ============= ORIGINAL FUNCTIONS (PRESERVED) =============
+
 export async function addAd(item: Omit<AdItem, 'id' | 'uploadedAt'>): Promise<AdItem | null> {
   const { data, error } = await supabase.from('ads').insert({
     title: item.title,
@@ -124,7 +126,8 @@ export async function deleteAd(id: string) {
   }
 }
 
-// Enhanced useAds hook with caching
+// ============= ENHANCED useAds HOOK WITH CACHING =============
+
 export function useAds(): { 
   ads: AdItem[]; 
   isLoading: boolean; 
@@ -262,6 +265,8 @@ export function useAds(): {
   };
 }
 
+// ============= ORIGINAL HELPER FUNCTIONS (PRESERVED) =============
+
 export function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -269,4 +274,224 @@ export function fileToDataUrl(file: File): Promise<string> {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+// ============= APPOINTMENT FUNCTIONS (ADDED BACK) =============
+
+export interface Appointment {
+  id: string;
+  patient_id: string;
+  patient_name?: string;
+  doctor_id?: string;
+  doctor_name?: string;
+  appointment_date: string;
+  appointment_time: string;
+  duration: number;
+  type: string;
+  status: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getAppointments(patientId?: string): Promise<Appointment[]> {
+  let query = supabase
+    .from('appointments')
+    .select(`
+      *,
+      patients:patient_id (first_name, last_name),
+      doctors:doctor_id (first_name, last_name)
+    `)
+    .order('appointment_date', { ascending: true })
+    .order('appointment_time', { ascending: true });
+
+  if (patientId) {
+    query = query.eq('patient_id', patientId);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('Error fetching appointments:', error);
+    return [];
+  }
+
+  return data.map((appointment: any) => ({
+    ...appointment,
+    patient_name: appointment.patients 
+      ? `${appointment.patients.first_name} ${appointment.patients.last_name}`
+      : 'Unknown Patient',
+    doctor_name: appointment.doctors
+      ? `${appointment.doctors.first_name} ${appointment.doctors.last_name}`
+      : 'Unknown Doctor',
+  }));
+}
+
+export async function createAppointment(appointment: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>): Promise<Appointment | null> {
+  const { data, error } = await supabase
+    .from('appointments')
+    .insert({
+      patient_id: appointment.patient_id,
+      doctor_id: appointment.doctor_id,
+      appointment_date: appointment.appointment_date,
+      appointment_time: appointment.appointment_time,
+      duration: appointment.duration,
+      type: appointment.type,
+      status: appointment.status || 'scheduled',
+      notes: appointment.notes,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating appointment:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function updateAppointment(id: string, updates: Partial<Appointment>): Promise<Appointment | null> {
+  const { data, error } = await supabase
+    .from('appointments')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating appointment:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function deleteAppointment(id: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('appointments')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting appointment:', error);
+    return false;
+  }
+
+  return true;
+}
+
+// ============= PATIENT FUNCTIONS (ADDED BACK) =============
+
+export interface Patient {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  date_of_birth?: string;
+  gender?: string;
+  address?: string;
+  medical_history?: any;
+  emergency_contact?: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getPatients(search?: string): Promise<Patient[]> {
+  let query = supabase
+    .from('patients')
+    .select('*')
+    .order('first_name', { ascending: true });
+
+  if (search) {
+    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('Error fetching patients:', error);
+    return [];
+  }
+
+  return data;
+}
+
+export async function getPatient(id: string): Promise<Patient | null> {
+  const { data, error } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching patient:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function createPatient(patient: Omit<Patient, 'id' | 'created_at' | 'updated_at'>): Promise<Patient | null> {
+  const { data, error } = await supabase
+    .from('patients')
+    .insert(patient)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating patient:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function updatePatient(id: string, updates: Partial<Patient>): Promise<Patient | null> {
+  const { data, error } = await supabase
+    .from('patients')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating patient:', error);
+    return null;
+  }
+
+  return data;
+}
+
+// ============= DOCTOR FUNCTIONS (ADDED BACK) =============
+
+export interface Doctor {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  specialization?: string;
+  is_active: boolean;
+  working_hours?: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getDoctors(activeOnly: boolean = true): Promise<Doctor[]> {
+  let query = supabase
+    .from('doctors')
+    .select('*')
+    .order('first_name', { ascending: true });
+
+  if (activeOnly) {
+    query = query.eq('is_active', true);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('Error fetching doctors:', error);
+    return [];
+  }
+
+  return data;
 }
