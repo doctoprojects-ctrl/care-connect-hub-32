@@ -1,128 +1,319 @@
-import { useEffect, useMemo, useState } from 'react';
+// components/QueueDisplay.tsx
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAds } from '@/lib/adsStore';
-import { QueueDept, useQueueTickets } from '@/lib/queueStore';
-import { clinicConfig } from '@/lib/clinicConfig';
 
-const DEPT_LABELS: Record<QueueDept, string> = {
-  doctor: 'Doctor',
-  pharmacy: 'Pharmacy',
-  triage: 'Triage',
-};
+/**
+ * How long an IMAGE ad stays on screen before the display scrolls
+ * to the next one. Gives people time to actually read the title.
+ */
+const IMAGE_READ_TIME_MS = 9000;
 
-const DEPT_COLORS: Record<QueueDept, string> = {
-  doctor: 'from-blue-500 to-blue-700',
-  pharmacy: 'from-emerald-500 to-emerald-700',
-  triage: 'from-amber-500 to-amber-700',
-};
+/**
+ * Safety cap for VIDEO ads in case the video's `onEnded` event never
+ * fires (corrupt file, browser quirk, etc). Videos normally advance
+ * on their own once playback finishes.
+ */
+const VIDEO_MAX_TIME_MS = 90000;
+
+/** How long the title banner keeps its "just changed" highlight. */
+const TITLE_HIGHLIGHT_MS = 1200;
+
+/** Number of retry attempts for video playback */
+const MAX_VIDEO_RETRIES = 3;
 
 export default function QueueDisplay() {
-  const tickets = useQueueTickets();
-  const ads = useAds().filter(a => a.active);
-  const [adIdx, setAdIdx] = useState(0);
-  const [now, setNow] = useState(new Date());
-  const currentAd = ads[adIdx];
+  const { ads, isLoading, error, lastFetched, refreshAds, clearCache } = useAds();
+  const [index, setIndex] = useState(0);
+  const [justChanged, setJustChanged] = useState(true);
+  const [videoError, setVideoError] = useState<Record<string, boolean>>({});
+  const timerRef = useRef<number | null>(null);
+  const highlightRef = useRef<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRetryCount = useRef<Record<string, number>>({});
 
+  const activeAds = useMemo(() => ads.filter((ad) => ad.active), [ads]);
+  const count = activeAds.length;
+  const current = count > 0 ? activeAds[index % count] : null;
+
+  // If ads are added/removed and the current index no longer exists,
+  // snap back to a valid slide instead of showing a blank screen.
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
+    if (count === 0) {
+      setIndex(0);
+      return;
+    }
+    if (index >= count) {
+      setIndex(0);
+    }
+  }, [count, index]);
 
-  // Rotate ads (images every 10s, videos handled by onEnded)
+  const advance = () => {
+    setIndex((prev) => (count === 0 ? 0 : (prev + 1) % count));
+  };
+
+  // Timer that decides WHEN to scroll to the next ad.
   useEffect(() => {
-    if (ads.length <= 1) return;
-    if (!currentAd || currentAd.type === 'video') return;
-    const t = setTimeout(() => {
-      setAdIdx(i => (i + 1) % ads.length);
-    }, 10000);
-    return () => clearTimeout(t);
-  }, [adIdx, ads, currentAd]);
+    // Clear any existing timers first
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (highlightRef.current) {
+      window.clearTimeout(highlightRef.current);
+      highlightRef.current = null;
+    }
 
-  useEffect(() => {
-    if (adIdx >= ads.length) setAdIdx(0);
-  }, [ads.length, adIdx]);
+    if (!current) return;
 
-  const nowServing = useMemo(() => {
-    const out: Record<QueueDept, ReturnType<typeof useQueueTickets>[number] | null> = {
-      doctor: null, pharmacy: null, triage: null,
+    // Set highlight
+    setJustChanged(true);
+    highlightRef.current = window.setTimeout(() => setJustChanged(false), TITLE_HIGHLIGHT_MS);
+
+    // Set the main timer based on ad type
+    if (current.type === 'image') {
+      timerRef.current = window.setTimeout(() => {
+        advance();
+      }, IMAGE_READ_TIME_MS);
+    } else {
+      // Videos advance on `onEnded`; this is just a fallback ceiling.
+      timerRef.current = window.setTimeout(() => {
+        // If video hasn't ended by now, force advance
+        const video = videoRef.current;
+        if (video && !video.ended) {
+          console.warn('Video timed out, forcing advance');
+        }
+        advance();
+      }, VIDEO_MAX_TIME_MS);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      if (highlightRef.current) {
+        window.clearTimeout(highlightRef.current);
+        highlightRef.current = null;
+      }
     };
-    (['doctor', 'pharmacy', 'triage'] as QueueDept[]).forEach(d => {
-      const list = tickets.filter(t => t.dept === d && (t.status === 'called' || t.status === 'serving'));
-      out[d] = list[list.length - 1] ?? null;
-    });
-    return out;
-  }, [tickets]);
+  }, [current?.id, count]);
 
-  const waitingCount = (d: QueueDept) => tickets.filter(t => t.dept === d && t.status === 'waiting').length;
+  // Make sure a freshly-scrolled-to video always starts playing from 0.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (v && current?.type === 'video') {
+      // Reset retry count for this video
+      if (!videoRetryCount.current[current.id]) {
+        videoRetryCount.current[current.id] = 0;
+      }
+      
+      v.currentTime = 0;
+      const playPromise = v.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Video started successfully
+            setVideoError(prev => ({ ...prev, [current.id]: false }));
+          })
+          .catch((error) => {
+            // Autoplay was blocked or other error
+            console.warn('Video play failed:', error);
+            
+            // Retry if we haven't exceeded max attempts
+            const retries = videoRetryCount.current[current.id] || 0;
+            if (retries < MAX_VIDEO_RETRIES) {
+              videoRetryCount.current[current.id] = retries + 1;
+              setTimeout(() => {
+                if (videoRef.current) {
+                  videoRef.current.play().catch(() => {});
+                }
+              }, 1000);
+            } else {
+              // If all retries fail, treat as image and advance after read time
+              setVideoError(prev => ({ ...prev, [current.id]: true }));
+              // Advance after image read time if video fails completely
+              timerRef.current = window.setTimeout(() => {
+                advance();
+              }, IMAGE_READ_TIME_MS);
+            }
+          });
+      }
+    }
+  }, [current?.id, current?.type]);
+
+  // Handle video errors
+  const handleVideoError = (adId: string) => {
+    setVideoError(prev => ({ ...prev, [adId]: true }));
+    // If video errors, advance after image read time
+    timerRef.current = window.setTimeout(() => {
+      advance();
+    }, IMAGE_READ_TIME_MS);
+  };
+
+  // Show loading state
+  if (isLoading && count === 0) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-neutral-950 text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white/60">Loading ads...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && count === 0) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-neutral-950 text-white">
+        <div className="text-center max-w-md">
+          <p className="text-red-500 text-xl mb-2">Failed to load ads</p>
+          <p className="text-white/60 mb-4">{error}</p>
+          <button
+            onClick={() => refreshAds()}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors mr-2"
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => clearCache()}
+            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors"
+          >
+            Clear Cache
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (count === 0) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-neutral-950 text-white">
+        <div className="text-center">
+          <p className="text-2xl text-white/60">No active ads to display right now.</p>
+          <p className="text-sm text-white/30 mt-4">Check back later for new content</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 flex flex-col gap-4">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{clinicConfig.name}</h1>
-          <p className="text-slate-400">Queue Display</p>
-        </div>
-        <div className="text-right">
-          <div className="text-3xl font-mono">{now.toLocaleTimeString()}</div>
-          <div className="text-slate-400">{now.toLocaleDateString()}</div>
-        </div>
-      </header>
+    <div className="min-h-screen w-full bg-neutral-950 text-white overflow-hidden flex flex-col">
+      {/* Cache info bar - shows when ads were last fetched */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-sm text-white/40 text-xs px-4 py-1 text-center flex items-center justify-between">
+        <span>
+          {lastFetched 
+            ? `📦 Ads loaded: ${lastFetched.toLocaleString()}` 
+            : '📦 Loading...'}
+        </span>
+        <span>
+          {ads.length > 0 && `Total: ${ads.length} ads`}
+        </span>
+      </div>
 
-      <div className="grid lg:grid-cols-5 gap-4 flex-1">
-        <div className="lg:col-span-2 grid grid-rows-3 gap-4">
-          {(['doctor', 'triage', 'pharmacy'] as QueueDept[]).map(d => {
-            const cur = nowServing[d];
-            return (
-              <div key={d} className={`rounded-2xl p-6 bg-gradient-to-br ${DEPT_COLORS[d]} shadow-2xl flex flex-col justify-between`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-semibold uppercase tracking-wide">{DEPT_LABELS[d]}</span>
-                  <span className="text-sm bg-black/30 rounded-full px-3 py-1">{waitingCount(d)} waiting</span>
-                </div>
-                {cur ? (
-                  <div>
-                    <div className="text-7xl font-black tracking-tight">{cur.code}</div>
-                    <div className="text-2xl mt-1 opacity-90">→ {cur.room}</div>
-                    <div className="text-sm mt-1 opacity-75">{cur.patientName}</div>
-                  </div>
+      {/* Sliding track: one full-screen slide per ad, scrolled horizontally */}
+      <div
+        className="flex h-screen w-full transition-transform duration-700 ease-in-out"
+        style={{
+          width: `${count * 100}%`,
+          transform: `translateX(-${index * (100 / count)}%)`,
+        }}
+      >
+        {activeAds.map((ad) => {
+          const isCurrent = ad.id === current?.id;
+          const hasError = videoError[ad.id] || false;
+          
+          return (
+            <div
+              key={ad.id}
+              className="h-screen flex flex-col items-center justify-center px-10 py-8 shrink-0"
+              style={{ width: `${100 / count}%` }}
+            >
+              {/* Title */}
+              <h1
+                className={[
+                  'text-center font-bold leading-tight mb-8 max-w-5xl transition-all duration-500',
+                  'text-4xl md:text-6xl',
+                  isCurrent && justChanged
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-90',
+                ].join(' ')}
+              >
+                {ad.title}
+              </h1>
+
+              {/* Media */}
+              <div className="flex-1 w-full flex items-center justify-center min-h-0 relative">
+                {ad.type === 'image' ? (
+                  <img
+                    src={ad.dataUrl}
+                    alt={ad.title}
+                    className="max-h-[70vh] max-w-full object-contain rounded-lg shadow-2xl"
+                    loading="lazy"
+                    onError={(e) => {
+                      console.warn('Image failed to load:', ad.id);
+                    }}
+                  />
                 ) : (
-                  <div className="text-3xl opacity-60">— Waiting —</div>
+                  <>
+                    {hasError ? (
+                      // Fallback for video errors - show a placeholder
+                      <div className="max-h-[70vh] max-w-full rounded-lg shadow-2xl bg-neutral-800 flex items-center justify-center">
+                        <div className="text-center p-8">
+                          <svg className="w-16 h-16 mx-auto mb-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-white/60">Video unavailable</p>
+                          <p className="text-white/30 text-sm mt-2">Will advance shortly</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <video
+                        ref={isCurrent ? videoRef : undefined}
+                        src={ad.dataUrl}
+                        autoPlay
+                        muted
+                        playsInline
+                        onEnded={() => {
+                          if (isCurrent) {
+                            advance();
+                          }
+                        }}
+                        onError={() => {
+                          if (isCurrent) {
+                            handleVideoError(ad.id);
+                          }
+                        }}
+                        className="max-h-[70vh] max-w-full object-contain rounded-lg shadow-2xl"
+                      />
+                    )}
+                  </>
                 )}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
+      </div>
 
-        <div className="lg:col-span-3 rounded-2xl bg-black overflow-hidden flex items-center justify-center relative">
-          {currentAd ? (
-            currentAd.type === 'image' ? (
-              <img
-                key={currentAd.id}
-                src={currentAd.dataUrl}
-                alt={currentAd.title}
-                className="w-full h-full object-contain animate-fade-in"
-              />
-            ) : (
-              <video
-                key={currentAd.id}
-                src={currentAd.dataUrl}
-                autoPlay
-                muted
-                playsInline
-                onEnded={() => setAdIdx(i => (i + 1) % Math.max(ads.length, 1))}
-                className="w-full h-full object-contain"
-              />
-            )
-          ) : (
-            <div className="text-center text-slate-500 p-8">
-              <p className="text-2xl">No advertisements configured.</p>
-              <p className="text-sm mt-2">Marketing can upload media from the Advertisements page.</p>
-            </div>
-          )}
-          {currentAd && (
-            <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur px-4 py-2 rounded-lg text-center">
-              <p className="text-sm font-medium">{currentAd.title}</p>
-            </div>
-          )}
-        </div>
+      {/* Progress dots so people can see how many ads are queued */}
+      <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2">
+        {activeAds.map((ad, i) => (
+          <span
+            key={ad.id}
+            className={[
+              'h-2 rounded-full transition-all duration-300',
+              i === index ? 'w-8 bg-white' : 'w-2 bg-white/30',
+            ].join(' ')}
+          />
+        ))}
+      </div>
+
+      {/* Display counter showing current position */}
+      <div className="absolute bottom-16 left-0 right-0 flex items-center justify-center">
+        <span className="text-xs text-white/30">
+          {index + 1} / {count}
+        </span>
       </div>
     </div>
   );
