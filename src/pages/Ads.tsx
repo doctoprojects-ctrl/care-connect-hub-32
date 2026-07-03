@@ -19,7 +19,7 @@ const TITLE_HIGHLIGHT_MS = 1200;
 
 export default function QueueDisplay() {
   const ads = useAds();
-  const activeAds = useMemo(() => ads.filter((ad) => ad.is_active), [ads]);
+  const activeAds = useMemo(() => ads.filter((ad) => ad.active), [ads]);
 
   const [index, setIndex] = useState(0);
   const [justChanged, setJustChanged] = useState(true);
@@ -55,7 +55,7 @@ export default function QueueDisplay() {
     setJustChanged(true);
     highlightRef.current = window.setTimeout(() => setJustChanged(false), TITLE_HIGHLIGHT_MS);
 
-    if (current.media_type === 'image') {
+    if (current.type === 'image') {
       timerRef.current = window.setTimeout(advance, IMAGE_READ_TIME_MS);
     } else {
       // Videos advance on `onEnded`; this is just a fallback ceiling.
@@ -72,13 +72,13 @@ export default function QueueDisplay() {
   // Make sure a freshly-scrolled-to video always starts playing from 0.
   useEffect(() => {
     const v = videoRef.current;
-    if (v && current?.media_type === 'video') {
+    if (v && current?.type === 'video') {
       v.currentTime = 0;
       v.play().catch(() => {
         /* autoplay can be blocked until the user interacts with the page */
       });
     }
-  }, [current?.id, current?.media_type]);
+  }, [current?.id, current?.type]);
 
   if (count === 0) {
     return (
@@ -119,16 +119,16 @@ export default function QueueDisplay() {
 
             {/* Media */}
             <div className="flex-1 w-full flex items-center justify-center min-h-0">
-              {ad.media_type === 'image' ? (
+              {ad.type === 'image' ? (
                 <img
-                  src={ad.media_url}
+                  src={ad.dataUrl}
                   alt={ad.title}
                   className="max-h-[70vh] max-w-full object-contain rounded-lg shadow-2xl"
                 />
               ) : (
                 <video
                   ref={ad.id === current?.id ? videoRef : undefined}
-                  src={ad.media_url}
+                  src={ad.dataUrl}
                   autoPlay
                   muted
                   playsInline
