@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockPatients, mockAppointments } from '@/store/mockData';
+import { useSheetAppointments } from '@/lib/sheetsAppointments';
 import {
   callNext,
   issueTicket,
@@ -32,6 +33,7 @@ const DEPT_LABELS: Record<QueueDept, string> = {
 export default function Queue() {
   const { user } = useAuth();
   const tickets = useQueueTickets();
+  const { data: sheetAppointments } = useSheetAppointments();
 
   // Check-in form
   const [patientId, setPatientId] = useState<string>('');
@@ -116,6 +118,24 @@ export default function Queue() {
         }
         return;
       } catch { /* fall through */ }
+    }
+    // Google Sheet appointment number match (exact ID)
+    const sheetMatch = sheetAppointments.find(
+      (a) => a.id.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (sheetMatch) {
+      setLookupResult({
+        ok: true,
+        patientId: `SHEET-${sheetMatch.id}`,
+        patientName: `${sheetMatch.firstName} ${sheetMatch.lastName}`.trim(),
+        appointmentId: undefined,
+        appointmentTime: `${sheetMatch.date} ${sheetMatch.time}`.trim(),
+      });
+      toast({
+        title: `Appointment #${sheetMatch.id}`,
+        description: `${sheetMatch.firstName} ${sheetMatch.lastName} · ${sheetMatch.type || 'Appointment'}`,
+      });
+      return;
     }
     const pid = extractPatientId(raw);
     const patient = mockPatients.find(p => p.id === pid);
@@ -309,8 +329,8 @@ export default function Queue() {
                 </form>
 
                 <p className="text-xs text-muted-foreground">
-                  Tip: QR codes encoded as <code>MPMS-P:&lt;patientId&gt;</code> or URLs containing
-                  <code> ?pid=&lt;patientId&gt;</code> are recognised automatically.
+                  Tip: Enter the <strong>appointment number</strong> (ID from the Google Sheet), a patient number,
+                  or scan a QR (<code>MPMS-P:&lt;patientId&gt;</code> or booking URL).
                 </p>
               </CardContent>
             </Card>
