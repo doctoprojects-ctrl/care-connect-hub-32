@@ -29,7 +29,6 @@ import Manual from "./pages/Manual";
 import Doctors from "./pages/Doctors";
 import Queue from "./pages/Queue";
 import QueueDisplay from "./pages/QueueDisplay";
-import Ads from "./pages/Ads";
 import AdsDisplay from "./pages/Ads";
 import NotFound from "./pages/NotFound";
 
@@ -90,9 +89,6 @@ const AppContent = () => {
             )}
             {(user?.role === 'admin' || user?.role === 'reception' || user?.role === 'doctor' || user?.role === 'cashier' || user?.role === 'supervisor') && (
               <Route path="/queue" element={<Queue />} />
-            )}
-            {(user?.role === 'admin' || user?.role === 'marketing') && (
-              <Route path="/ads" element={<Ads />} />
             )}
             <Route path="*" element={<NotFound />} />
           </Routes>

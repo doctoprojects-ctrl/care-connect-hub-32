@@ -351,9 +351,10 @@ export async function createAppointment(appointment: Omit<Appointment, 'id' | 'c
 }
 
 export async function updateAppointment(id: string, updates: Partial<Appointment>): Promise<Appointment | null> {
+  const { patient_name, doctor_name, ...safe } = updates as any;
   const { data, error } = await supabase
     .from('appointments')
-    .update(updates)
+    .update(safe)
     .eq('id', id)
     .select()
     .single();
