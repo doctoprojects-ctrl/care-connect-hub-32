@@ -249,6 +249,82 @@ export default function Pharmacy() {
           </div>
         </TabsContent>
 
+        {/* Prescriptions from doctors */}
+        <TabsContent value="prescriptions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Pill className="w-5 h-5" />Doctor Prescriptions</CardTitle>
+              <CardDescription>Admin marks as paid, then pharmacy dispenses.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {prescriptions.length === 0 && <p className="text-muted-foreground text-sm">No prescriptions yet.</p>}
+              <div className="space-y-3">
+                {prescriptions.map((rx) => (
+                  <div key={rx.id} className="border rounded-md p-3 space-y-2">
+                    <div className="flex items-start justify-between flex-wrap gap-2">
+                      <div>
+                        <div className="font-medium">{rx.patientName}</div>
+                        <div className="text-xs text-muted-foreground">{new Date(rx.createdAt).toLocaleString()} · {rx.doctorName || 'Doctor'}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={rx.status === 'dispensed' ? 'default' : rx.status === 'cancelled' ? 'secondary' : 'outline'}>{rx.status}</Badge>
+                        <Badge variant={rx.paid ? 'default' : 'destructive'}>{rx.paid ? 'Paid' : 'Unpaid'}</Badge>
+                        <span className="text-sm font-semibold">${rx.total.toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <Table>
+                      <TableHeader><TableRow><TableHead>Medication</TableHead><TableHead>Qty</TableHead><TableHead>Price</TableHead><TableHead>Instructions</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {rx.items.map((it, i) => (
+                          <TableRow key={i}>
+                            <TableCell>{it.name}</TableCell>
+                            <TableCell>{it.quantity}</TableCell>
+                            <TableCell>{it.unitPrice ? `$${Number(it.unitPrice).toFixed(2)}` : '—'}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">{it.instructions || ''}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    {rx.notes && <p className="text-xs text-muted-foreground">Note: {rx.notes}</p>}
+                    {rx.status === 'pending' && (
+                      <div className="flex flex-wrap gap-2">
+                        {isAdmin && !rx.paid && (
+                          <Button size="sm" onClick={async () => { await markPrescriptionPaid(rx.id, `${user?.firstName} ${user?.lastName}`); toast({ title: 'Marked paid' }); }}>
+                            <DollarSign className="w-4 h-4 mr-1" />Mark Paid
+                          </Button>
+                        )}
+                        <Button size="sm" variant="default" disabled={!rx.paid || !canSell} onClick={async () => {
+                          // decrement stock for any matching pharmacy items (by name)
+                          setItems((prev) => prev.map((it) => {
+                            const match = rx.items.find((r) => r.name.trim().toLowerCase() === it.name.trim().toLowerCase());
+                            return match ? { ...it, stock: Math.max(0, it.stock - (match.quantity || 0)) } : it;
+                          }));
+                          await dispensePrescription(rx.id, `${user?.firstName} ${user?.lastName}`);
+                          toast({ title: 'Dispensed', description: rx.patientName });
+                        }}>
+                          <CheckCircle2 className="w-4 h-4 mr-1" />Dispense
+                        </Button>
+                        {isAdmin && (
+                          <Button size="sm" variant="ghost" onClick={async () => { await cancelPrescription(rx.id); }}>Cancel</Button>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => {
+                          const w = window.open('', '_blank', 'width=700,height=800'); if (!w) return;
+                          w.document.write(`<!doctype html><html><head><title>Rx</title><style>body{font-family:system-ui;padding:24px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left}</style></head><body>
+                          <h2>Prescription</h2><p><b>${rx.patientName}</b> · ${new Date(rx.createdAt).toLocaleDateString()} · ${rx.doctorName || ''}</p>
+                          <table><thead><tr><th>Medication</th><th>Qty</th><th>Instructions</th></tr></thead><tbody>
+                          ${rx.items.map((i) => `<tr><td>${i.name}</td><td>${i.quantity}</td><td>${i.instructions || ''}</td></tr>`).join('')}
+                          </tbody></table>${rx.notes ? `<p>Note: ${rx.notes}</p>` : ''}</body></html>`);
+                          w.document.close(); setTimeout(() => w.print(), 300);
+                        }}><Printer className="w-4 h-4 mr-1" />Print</Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Items */}
         <TabsContent value="items" className="space-y-4">
           <div className="flex justify-end">
