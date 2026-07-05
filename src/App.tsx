@@ -30,6 +30,7 @@ import Doctors from "./pages/Doctors";
 import Queue from "./pages/Queue";
 import QueueDisplay from "./pages/QueueDisplay";
 import Ads from "./pages/Ads";
+import AdsDisplay from "./pages/Ads";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -113,6 +114,7 @@ const App = () => {
               <Routes>
                 <Route path="/book" element={<QRBooking />} />
                 <Route path="/queue/display" element={<QueueDisplay />} />
+              <Route path="/ads" element={<AdsDisplay />} />
                 <Route path="/*" element={<AppContent />} />
               </Routes>
             </BrowserRouter>
