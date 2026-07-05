@@ -14,7 +14,8 @@ import { BarcodeDisplay } from '@/components/common/BarcodeDisplay';
 import { BarcodeScanner } from '@/components/common/BarcodeScanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Plus, ScanLine, Trash2, Printer } from 'lucide-react';
+import { Plus, ScanLine, Trash2, Printer, Pill, CheckCircle2, DollarSign } from 'lucide-react';
+import { usePrescriptions, markPrescriptionPaid, dispensePrescription, cancelPrescription } from '@/lib/prescriptionsStore';
 
 const genBarcode = () => '6' + Math.floor(100000000000 + Math.random() * 899999999999).toString();
 
@@ -42,6 +43,9 @@ export default function Pharmacy() {
 
   // Stock take
   const [takeCounts, setTakeCounts] = useState<Record<string, number>>({});
+
+  const { prescriptions } = usePrescriptions();
+  const pendingRx = prescriptions.filter((p) => p.status === 'pending');
 
   const cartTotal = useMemo(() => cart.reduce((s, l) => s + l.quantity * l.unitPrice, 0), [cart]);
 
@@ -172,6 +176,9 @@ export default function Pharmacy() {
       <Tabs defaultValue={defaultTab}>
         <TabsList>
           {canSell && <TabsTrigger value="sales">POS Sales</TabsTrigger>}
+          <TabsTrigger value="prescriptions">
+            Prescriptions{pendingRx.length > 0 && <Badge variant="destructive" className="ml-2">{pendingRx.length}</Badge>}
+          </TabsTrigger>
           {canManage && <TabsTrigger value="items">Items</TabsTrigger>}
           {canManage && <TabsTrigger value="grv">GRV (Receive)</TabsTrigger>}
           {canManage && <TabsTrigger value="stocktake">Stock Take</TabsTrigger>}
