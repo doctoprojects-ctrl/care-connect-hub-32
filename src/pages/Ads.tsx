@@ -18,7 +18,7 @@ const VIDEO_MAX_TIME_MS = 90000;
 const TITLE_HIGHLIGHT_MS = 1200;
 
 export default function QueueDisplay() {
-  const ads = useAds();
+  const { ads } = useAds();
   const activeAds = useMemo(() => ads.filter((ad) => ad.active), [ads]);
 
   const [index, setIndex] = useState(0);
