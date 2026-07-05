@@ -512,6 +512,71 @@ export type Database = {
         }
         Relationships: []
       }
+      prescriptions: {
+        Row: {
+          consultation_id: string | null
+          created_at: string
+          dispensed_at: string | null
+          dispensed_by: string | null
+          doctor_name: string | null
+          id: string
+          items: Json
+          notes: string | null
+          paid: boolean
+          paid_at: string | null
+          paid_by: string | null
+          patient_id: string
+          patient_name: string
+          status: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          consultation_id?: string | null
+          created_at?: string
+          dispensed_at?: string | null
+          dispensed_by?: string | null
+          doctor_name?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          paid?: boolean
+          paid_at?: string | null
+          paid_by?: string | null
+          patient_id: string
+          patient_name: string
+          status?: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          consultation_id?: string | null
+          created_at?: string
+          dispensed_at?: string | null
+          dispensed_by?: string | null
+          doctor_name?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          paid?: boolean
+          paid_at?: string | null
+          paid_by?: string | null
+          patient_id?: string
+          patient_name?: string
+          status?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_consultation_id_fkey"
+            columns: ["consultation_id"]
+            isOneToOne: false
+            referencedRelation: "consultations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       queue_tickets: {
         Row: {
           appointment_id: string | null
