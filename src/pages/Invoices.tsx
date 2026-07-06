@@ -13,9 +13,11 @@ import { Plus, Printer, Trash2, DollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { clinicConfig, money } from '@/lib/clinicConfig';
+import { useT } from '@/contexts/LanguageContext';
 
 export default function Invoices() {
   const { user } = useAuth();
+  const t = useT();
   const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
   const [dialog, setDialog] = useState(false);
   const [printInv, setPrintInv] = useState<Invoice | null>(null);
@@ -69,25 +71,25 @@ export default function Invoices() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Invoices</h2>
-          <p className="text-muted-foreground">Issue and print patient invoices</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t('invoices_title')}</h2>
+          <p className="text-muted-foreground">{t('invoices_desc')}</p>
         </div>
         <Dialog open={dialog} onOpenChange={setDialog}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />New Invoice</Button></DialogTrigger>
+          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />{t('new_invoice')}</Button></DialogTrigger>
           <DialogContent className="max-w-2xl">
-            <DialogHeader><DialogTitle>New Invoice</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t('new_invoice')}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label>Patient</Label>
+                <Label>{t('patient')}</Label>
                 <Select value={patientId} onValueChange={setPatientId}>
-                  <SelectTrigger><SelectValue placeholder="Select patient" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('select_patient')} /></SelectTrigger>
                   <SelectContent>{mockPatients.map((p) => <SelectItem key={p.id} value={p.id}>{p.firstName} {p.lastName}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Add Service</Label>
+                <Label>{t('add_service')}</Label>
                 <Select value="" onValueChange={addLine}>
-                  <SelectTrigger><SelectValue placeholder="Choose service to add" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('choose_service')} /></SelectTrigger>
                   <SelectContent>{mockServicePrices.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} - ${s.price}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -101,8 +103,8 @@ export default function Invoices() {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between font-bold pt-2 border-t"><span>Total</span><span>${total.toFixed(2)}</span></div>
-              <Button className="w-full" onClick={create} disabled={!patientId || lines.length === 0}>Create Invoice</Button>
+              <div className="flex justify-between font-bold pt-2 border-t"><span>{t('total')}</span><span>${total.toFixed(2)}</span></div>
+              <Button className="w-full" onClick={create} disabled={!patientId || lines.length === 0}>{t('create_invoice')}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -111,7 +113,7 @@ export default function Invoices() {
       <Card>
         <CardContent className="pt-6">
           <Table>
-            <TableHeader><TableRow><TableHead>Invoice#</TableHead><TableHead>Patient</TableHead><TableHead>Date</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead></TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>{t('invoice_no')}</TableHead><TableHead>{t('patient')}</TableHead><TableHead>{t('date')}</TableHead><TableHead>{t('total')}</TableHead><TableHead>{t('status')}</TableHead><TableHead></TableHead></TableRow></TableHeader>
             <TableBody>
               {invoices.map((i) => (
                 <TableRow key={i.id}>
@@ -123,11 +125,11 @@ export default function Invoices() {
                   <TableCell className="space-x-2">
                     {i.status !== 'paid' && (
                       <Button size="sm" onClick={() => setPayInv(i)}>
-                        <DollarSign className="w-4 h-4 mr-1" />Pay
+                        <DollarSign className="w-4 h-4 mr-1" />{t('pay')}
                       </Button>
                     )}
                     <Button size="sm" variant="outline" onClick={() => setPrintInv(i)}>
-                      <Printer className="w-4 h-4 mr-1" />Print
+                      <Printer className="w-4 h-4 mr-1" />{t('print')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -140,30 +142,30 @@ export default function Invoices() {
       <Dialog open={!!payInv} onOpenChange={(o) => !o && setPayInv(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Receive Payment</DialogTitle>
+            <DialogTitle>{t('receive_payment')}</DialogTitle>
           </DialogHeader>
           {payInv && (
             <div className="space-y-3">
               <div className="text-sm">
-                <div><strong>Invoice:</strong> {payInv.invoiceNumber}</div>
-                <div><strong>Patient:</strong> {payInv.patientName}</div>
-                <div className="text-lg pt-2"><strong>Amount Due:</strong> ${payInv.total.toFixed(2)}</div>
+                <div><strong>{t('invoice_no')}:</strong> {payInv.invoiceNumber}</div>
+                <div><strong>{t('patient')}:</strong> {payInv.patientName}</div>
+                <div className="text-lg pt-2"><strong>{t('amount_due')}:</strong> ${payInv.total.toFixed(2)}</div>
               </div>
               <div>
-                <Label>Payment Method</Label>
+                <Label>{t('payment_method')}</Label>
                 <Select value={payMethod} onValueChange={(v: 'cash' | 'card' | 'mobile') => setPayMethod(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="mobile">Mobile Money</SelectItem>
+                    <SelectItem value="cash">{t('cash')}</SelectItem>
+                    <SelectItem value="card">{t('card')}</SelectItem>
+                    <SelectItem value="mobile">{t('mobile_money')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <p className="text-xs text-muted-foreground">
-                Receiving at: {user?.role === 'cashier' ? 'Pharmacy Cashier' : 'Reception'}
+                {t('receiving_at')}: {user?.role === 'cashier' ? t('pharmacy_cashier') : t('reception')}
               </p>
-              <Button className="w-full" onClick={recordPayment}>Confirm Payment</Button>
+              <Button className="w-full" onClick={recordPayment}>{t('confirm_payment')}</Button>
             </div>
           )}
         </DialogContent>
@@ -182,18 +184,18 @@ export default function Invoices() {
                   <p className="text-xs">{clinicConfig.phone} · {clinicConfig.email}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-semibold uppercase tracking-wide">Tax Invoice</div>
+                  <div className="text-xl font-semibold uppercase tracking-wide">{t('tax_invoice')}</div>
                   <div className="text-sm text-muted-foreground">{clinicConfig.taxId}</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><strong>Billed to:</strong> {printInv.patientName}</div>
-                <div className="text-right"><strong>Invoice #:</strong> {printInv.invoiceNumber}</div>
-                <div><strong>Issued:</strong> {printInv.issuedDate}</div>
-                <div className="text-right"><strong>Due:</strong> {printInv.dueDate}</div>
+                <div><strong>{t('billed_to')}:</strong> {printInv.patientName}</div>
+                <div className="text-right"><strong>{t('invoice_no')}:</strong> {printInv.invoiceNumber}</div>
+                <div><strong>{t('issued')}:</strong> {printInv.issuedDate}</div>
+                <div className="text-right"><strong>{t('due')}:</strong> {printInv.dueDate}</div>
               </div>
               <Table>
-                <TableHeader><TableRow><TableHead>Description</TableHead><TableHead className="text-right">Qty</TableHead><TableHead className="text-right">Price</TableHead><TableHead className="text-right">Total</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>{t('description')}</TableHead><TableHead className="text-right">{t('qty')}</TableHead><TableHead className="text-right">{t('price')}</TableHead><TableHead className="text-right">{t('total')}</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {printInv.lines.map((l, i) => (
                     <TableRow key={i}>
@@ -206,13 +208,13 @@ export default function Invoices() {
                 </TableBody>
               </Table>
               <div className="space-y-1 pt-2 border-t text-sm">
-                <div className="flex justify-between"><span>Subtotal</span><span>{money(printInv.total)}</span></div>
-                <div className="flex justify-between"><span>Amount paid</span><span>{money(printInv.amountPaid)}</span></div>
-                <div className="flex justify-between font-bold text-lg pt-1 border-t"><span>Balance due</span><span>{money(printInv.total - printInv.amountPaid)}</span></div>
+                <div className="flex justify-between"><span>{t('subtotal')}</span><span>{money(printInv.total)}</span></div>
+                <div className="flex justify-between"><span>{t('amount_paid')}</span><span>{money(printInv.amountPaid)}</span></div>
+                <div className="flex justify-between font-bold text-lg pt-1 border-t"><span>{t('balance_due')}</span><span>{money(printInv.total - printInv.amountPaid)}</span></div>
               </div>
-              {printInv.notes && <p className="text-xs text-muted-foreground border-t pt-2"><strong>Notes:</strong> {printInv.notes}</p>}
-              <p className="text-xs text-muted-foreground text-center pt-4">Thank you for choosing {clinicConfig.name}.</p>
-              <Button className="w-full print:hidden" onClick={() => window.print()}><Printer className="w-4 h-4 mr-2" />Print Invoice</Button>
+              {printInv.notes && <p className="text-xs text-muted-foreground border-t pt-2"><strong>{t('notes')}:</strong> {printInv.notes}</p>}
+              <p className="text-xs text-muted-foreground text-center pt-4">{t('thank_you_clinic', { clinic: clinicConfig.name })}</p>
+              <Button className="w-full print:hidden" onClick={() => window.print()}><Printer className="w-4 h-4 mr-2" />{t('print_invoice')}</Button>
             </div>
           )}
         </DialogContent>
