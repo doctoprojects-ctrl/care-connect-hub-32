@@ -5,8 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { mockAppointments, mockPatients, mockDoctors } from '@/store/mockData';
 import { cn } from '@/lib/utils';
+import { useT, useLanguage } from '@/contexts/LanguageContext';
 
 export default function CalendarView() {
+  const t = useT();
+  const { lang } = useLanguage();
   const [cursor, setCursor] = useState(new Date());
   const [selected, setSelected] = useState<string | null>(new Date().toISOString().split('T')[0]);
 
@@ -39,13 +42,16 @@ export default function CalendarView() {
     return d ? `${d.firstName} ${d.lastName}` : 'Unknown';
   };
 
-  const monthLabel = cursor.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const monthLabel = cursor.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'long', year: 'numeric' });
+  const weekdays = lang === 'fr'
+    ? ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam']
+    : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Appointment Calendar</h2>
-        <p className="text-muted-foreground">Red = appointments scheduled · Green = no appointments</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t('calendar_title')}</h2>
+        <p className="text-muted-foreground">{t('calendar_desc')}</p>
       </div>
 
       <Card>
@@ -53,13 +59,13 @@ export default function CalendarView() {
           <CardTitle>{monthLabel}</CardTitle>
           <div className="flex gap-2">
             <Button size="icon" variant="outline" onClick={() => setCursor(new Date(year, month - 1, 1))}><ChevronLeft className="w-4 h-4" /></Button>
-            <Button size="sm" variant="outline" onClick={() => setCursor(new Date())}>Today</Button>
+            <Button size="sm" variant="outline" onClick={() => setCursor(new Date())}>{t('today')}</Button>
             <Button size="icon" variant="outline" onClick={() => setCursor(new Date(year, month + 1, 1))}><ChevronRight className="w-4 h-4" /></Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-medium text-muted-foreground">
-            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => <div key={d}>{d}</div>)}
+            {weekdays.map((d) => <div key={d}>{d}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-2">
             {cells.map((d, i) => {
@@ -90,12 +96,12 @@ export default function CalendarView() {
       {selected && (
         <Card>
           <CardHeader>
-            <CardTitle>{new Date(selected).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</CardTitle>
-            <CardDescription>{selectedAppts.length} appointment{selectedAppts.length !== 1 ? 's' : ''} to attend</CardDescription>
+            <CardTitle>{new Date(selected).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</CardTitle>
+            <CardDescription>{t('appts_to_attend', { count: selectedAppts.length })}</CardDescription>
           </CardHeader>
           <CardContent>
             {selectedAppts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No appointments — free day.</p>
+              <p className="text-sm text-muted-foreground">{t('no_appts_free_day')}</p>
             ) : (
               <div className="space-y-2">
                 {selectedAppts.sort((a, b) => a.appointmentTime.localeCompare(b.appointmentTime)).map((a) => (

@@ -9,9 +9,11 @@ import { mockCashUps, mockSales } from '@/store/mockData';
 import { CashUp as CashUpType } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useT } from '@/contexts/LanguageContext';
 
 export default function CashUp() {
   const { user } = useAuth();
+  const t = useT();
   const [cashups, setCashups] = useState<CashUpType[]>(mockCashUps);
   const [openingFloat, setOpeningFloat] = useState(500);
   const [countedCash, setCountedCash] = useState(0);
@@ -52,25 +54,25 @@ export default function CashUp() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Cash Up</h2>
-        <p className="text-muted-foreground">Close cashier shift and reconcile takings</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t('cashup_title')}</h2>
+        <p className="text-muted-foreground">{t('cashup_desc')}</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>End of Shift</CardTitle>
-            <CardDescription>Enter counted amounts vs expected</CardDescription>
+            <CardTitle>{t('end_of_shift')}</CardTitle>
+            <CardDescription>{t('end_of_shift_desc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Opening Float</Label>
+              <Label>{t('opening_float')}</Label>
               <Input type="number" value={openingFloat} onChange={(e) => setOpeningFloat(Number(e.target.value))} />
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="font-medium">Method</div>
-              <div className="font-medium">Expected</div>
-              <div className="font-medium">Counted</div>
+              <div className="font-medium">{t('method')}</div>
+              <div className="font-medium">{t('expected')}</div>
+              <div className="font-medium">{t('counted')}</div>
               {(['cash', 'card', 'mobile'] as const).map((m) => (
                 <Fragment key={m}>
                   <div className="capitalize self-center">{m}</div>
@@ -86,25 +88,25 @@ export default function CashUp() {
               ))}
             </div>
             <div className={`p-3 rounded text-center font-semibold ${variance === 0 ? 'bg-green-500/10 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
-              Variance: ${variance.toFixed(2)}
+              {t('variance')}: ${variance.toFixed(2)}
             </div>
             <div>
-              <Label>Notes</Label>
+              <Label>{t('notes')}</Label>
               <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
-            <Button className="w-full" onClick={closeShift}>Close Shift & Submit Cash Up</Button>
+            <Button className="w-full" onClick={closeShift}>{t('close_shift')}</Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Today's Sales ({todaysSales.length})</CardTitle>
+            <CardTitle>{t('todays_sales')} ({todaysSales.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
-              <TableHeader><TableRow><TableHead>Receipt</TableHead><TableHead>Method</TableHead><TableHead>Total</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>{t('receipt')}</TableHead><TableHead>{t('method')}</TableHead><TableHead>{t('total')}</TableHead></TableRow></TableHeader>
               <TableBody>
-                {todaysSales.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No sales today</TableCell></TableRow>}
+                {todaysSales.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t('no_sales_today')}</TableCell></TableRow>}
                 {todaysSales.map((s) => (
                   <TableRow key={s.id}><TableCell className="font-mono">{s.receiptNumber}</TableCell><TableCell className="capitalize">{s.paymentMethod}</TableCell><TableCell>${s.total.toFixed(2)}</TableCell></TableRow>
                 ))}
@@ -115,10 +117,10 @@ export default function CashUp() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Cash Up History</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('cashup_history')}</CardTitle></CardHeader>
         <CardContent>
           <Table>
-            <TableHeader><TableRow><TableHead>Shift</TableHead><TableHead>Cashier</TableHead><TableHead>Closed</TableHead><TableHead>Expected</TableHead><TableHead>Counted</TableHead><TableHead>Variance</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>{t('shift')}</TableHead><TableHead>{t('cashier')}</TableHead><TableHead>{t('closed')}</TableHead><TableHead>{t('expected')}</TableHead><TableHead>{t('counted')}</TableHead><TableHead>{t('variance')}</TableHead></TableRow></TableHeader>
             <TableBody>
               {cashups.map((c) => {
                 const exp = c.expectedCash + c.expectedCard + c.expectedMobile;

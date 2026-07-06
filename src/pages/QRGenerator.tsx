@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { QrCode, Download, Copy, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useT } from '@/contexts/LanguageContext';
 
 export default function QRGenerator() {
+  const t = useT();
   const [qrSize, setQrSize] = useState(300);
   const [practiceInfo, setPracticeInfo] = useState({
     name: 'Medical Practice',
@@ -73,10 +75,8 @@ export default function QRGenerator() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground">QR Code Generator</h2>
-        <p className="text-muted-foreground">
-          Generate QR codes for appointment booking that patients can scan
-        </p>
+        <h2 className="text-2xl font-bold text-foreground">{t('qr_title')}</h2>
+        <p className="text-muted-foreground">{t('qr_desc')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -85,11 +85,9 @@ export default function QRGenerator() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <QrCode className="w-5 h-5" />
-              QR Code Preview
+              {t('qr_preview')}
             </CardTitle>
-            <CardDescription>
-              Scan this QR code to access the appointment booking page
-            </CardDescription>
+            <CardDescription>{t('qr_preview_desc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-center p-4 bg-white rounded-lg border">
@@ -103,18 +101,18 @@ export default function QRGenerator() {
             
             <div className="text-center space-y-2">
               <p className="text-sm text-muted-foreground">
-                Booking URL: <span className="font-mono text-xs">{getBookingUrl()}</span>
+                {t('booking_url')}: <span className="font-mono text-xs">{getBookingUrl()}</span>
               </p>
             </div>
 
             <div className="flex gap-2">
               <Button onClick={downloadQRCode} className="flex-1">
                 <Download className="w-4 h-4 mr-2" />
-                Download
+                {t('download')}
               </Button>
               <Button onClick={copyBookingLink} variant="outline" className="flex-1">
                 <Copy className="w-4 h-4 mr-2" />
-                Copy Link
+                {t('copy_link')}
               </Button>
             </div>
           </CardContent>
@@ -123,14 +121,12 @@ export default function QRGenerator() {
         {/* Customization Options */}
         <Card>
           <CardHeader>
-            <CardTitle>Customization</CardTitle>
-            <CardDescription>
-              Customize your QR code and practice information
-            </CardDescription>
+            <CardTitle>{t('customization')}</CardTitle>
+            <CardDescription>{t('customization_desc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="qrSize">QR Code Size (pixels)</Label>
+              <Label htmlFor="qrSize">{t('qr_size')}</Label>
               <Input
                 id="qrSize"
                 type="number"
@@ -143,7 +139,7 @@ export default function QRGenerator() {
             </div>
 
             <div>
-              <Label htmlFor="practiceName">Practice Name</Label>
+              <Label htmlFor="practiceName">{t('practice_name')}</Label>
               <Input
                 id="practiceName"
                 value={practiceInfo.name}
@@ -153,7 +149,7 @@ export default function QRGenerator() {
             </div>
 
             <div>
-              <Label htmlFor="practicePhone">Practice Phone</Label>
+              <Label htmlFor="practicePhone">{t('practice_phone')}</Label>
               <Input
                 id="practicePhone"
                 value={practiceInfo.phone}
@@ -163,7 +159,7 @@ export default function QRGenerator() {
             </div>
 
             <div>
-              <Label htmlFor="practiceAddress">Practice Address</Label>
+              <Label htmlFor="practiceAddress">{t('practice_address')}</Label>
               <Textarea
                 id="practiceAddress"
                 value={practiceInfo.address}
@@ -179,7 +175,7 @@ export default function QRGenerator() {
               className="w-full"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Regenerate QR Code
+              {t('regenerate_qr')}
             </Button>
           </CardContent>
         </Card>
@@ -188,25 +184,25 @@ export default function QRGenerator() {
       {/* Instructions */}
       <Card>
         <CardHeader>
-          <CardTitle>How to Use</CardTitle>
+          <CardTitle>{t('how_to_use')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm text-muted-foreground">
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold mt-0.5">1</div>
-              <p>Download or print the QR code and place it in your practice waiting area, reception desk, or marketing materials.</p>
+              <p>{t('qr_step_1')}</p>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold mt-0.5">2</div>
-              <p>Patients can scan the QR code with their smartphone camera to access the appointment booking page directly.</p>
+              <p>{t('qr_step_2')}</p>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold mt-0.5">3</div>
-              <p>The booking page allows patients to enter their information and schedule appointments without needing to call or visit in person.</p>
+              <p>{t('qr_step_3')}</p>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold mt-0.5">4</div>
-              <p>Share the booking link directly via email, text message, or social media for easy access.</p>
+              <p>{t('qr_step_4')}</p>
             </div>
           </div>
         </CardContent>

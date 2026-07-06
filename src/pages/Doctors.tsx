@@ -41,7 +41,7 @@ export default function Doctors() {
 
   const addDoctor = () => {
     if (!form.firstName || !form.lastName || !form.pin) {
-      toast({ title: 'Missing fields', description: 'First name, last name and PIN are required.', variant: 'destructive' });
+      toast({ title: t('login_error_title'), description: t('doctor_missing_fields'), variant: 'destructive' });
       return;
     }
     const newDoc: User = {
@@ -57,7 +57,7 @@ export default function Doctors() {
     setUsers([...mockUsers]);
     setForm({ firstName: '', lastName: '', email: '', pin: '' });
     setOpen(false);
-    toast({ title: 'Doctor added', description: `Dr. ${newDoc.firstName} ${newDoc.lastName}` });
+    toast({ title: t('doctor_added'), description: `Dr. ${newDoc.firstName} ${newDoc.lastName}` });
   };
 
   return (
@@ -81,15 +81,15 @@ export default function Doctors() {
               </DialogHeader>
               <div className="grid gap-3">
                 <div>
-                  <Label>First name</Label>
+                  <Label>{t('first_name')}</Label>
                   <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Last name</Label>
+                  <Label>{t('last_name')}</Label>
                   <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Email</Label>
+                  <Label>{t('email')}</Label>
                   <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </div>
                 <div>
@@ -108,7 +108,7 @@ export default function Doctors() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle>{doctors.length} {t('nav_doctors')}</CardTitle>
+          <CardTitle>{t('doctors_count', { count: doctors.length })}</CardTitle>
           <div className="relative w-64">
             <Search className="absolute left-2 top-2.5 w-4 h-4 text-muted-foreground" />
             <Input
@@ -123,9 +123,9 @@ export default function Doctors() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t('name')}</TableHead>
+                <TableHead>{t('email')}</TableHead>
+                <TableHead>{t('status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -142,7 +142,7 @@ export default function Doctors() {
                     <TableCell>{d.email}</TableCell>
                     <TableCell>
                       <Badge variant={d.isActive ? 'default' : 'secondary'}>
-                        {d.isActive ? 'Active' : 'Inactive'}
+                        {d.isActive ? t('active') : t('inactive')}
                       </Badge>
                     </TableCell>
                   </TableRow>

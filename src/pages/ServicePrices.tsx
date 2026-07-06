@@ -10,9 +10,11 @@ import { ServicePrice } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useT } from '@/contexts/LanguageContext';
 
 export default function ServicePrices() {
   const { user } = useAuth();
+  const t = useT();
   const canEdit = user?.role === 'admin' || user?.role === 'supervisor';
   const [services, setServices] = useState<ServicePrice[]>(mockServicePrices);
   const [dialog, setDialog] = useState(false);
@@ -31,21 +33,21 @@ export default function ServicePrices() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Clinic Service Prices</h2>
-          <p className="text-muted-foreground">Standard rates for consultations, procedures and tests</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t('services_title')}</h2>
+          <p className="text-muted-foreground">{t('services_desc')}</p>
         </div>
         {canEdit && (
           <Dialog open={dialog} onOpenChange={setDialog}>
-            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Service</Button></DialogTrigger>
+            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />{t('add_service')}</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>New Service</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t('new_service')}</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div><Label>Code</Label><Input value={form.code || ''} onChange={(e) => setForm({ ...form, code: e.target.value })} /></div>
-                <div><Label>Name</Label><Input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-                <div><Label>Category</Label><Input value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
-                <div><Label>Price</Label><Input type="number" value={form.price ?? 0} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} /></div>
-                <div><Label>Description</Label><Input value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-                <Button className="w-full" onClick={add}>Add</Button>
+                <div><Label>{t('code')}</Label><Input value={form.code || ''} onChange={(e) => setForm({ ...form, code: e.target.value })} /></div>
+                <div><Label>{t('name')}</Label><Input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+                <div><Label>{t('category')}</Label><Input value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
+                <div><Label>{t('price')}</Label><Input type="number" value={form.price ?? 0} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} /></div>
+                <div><Label>{t('description')}</Label><Input value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                <Button className="w-full" onClick={add}>{t('add')}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -55,7 +57,7 @@ export default function ServicePrices() {
       <Card>
         <CardContent className="pt-6">
           <Table>
-            <TableHeader><TableRow><TableHead>Code</TableHead><TableHead>Service</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Price</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>{t('code')}</TableHead><TableHead>{t('service')}</TableHead><TableHead>{t('category')}</TableHead><TableHead className="text-right">{t('price')}</TableHead></TableRow></TableHeader>
             <TableBody>
               {services.map((s) => (
                 <TableRow key={s.id}>

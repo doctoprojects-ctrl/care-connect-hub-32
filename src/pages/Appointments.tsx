@@ -6,8 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RefreshCcw, ExternalLink, Search } from 'lucide-react';
 import { SHEET_CSV_URL, useSheetAppointments } from '@/lib/sheetsAppointments';
+import { useT } from '@/contexts/LanguageContext';
 
 export default function Appointments() {
+  const t = useT();
   const { data, loading, error, refresh } = useSheetAppointments();
   const [q, setQ] = useState('');
   const [dateFilter, setDateFilter] = useState<string>('');
@@ -32,19 +34,16 @@ export default function Appointments() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Appointments</h2>
-          <p className="text-muted-foreground">
-            Bookings sync live from the Google Sheet. Each row's <strong>ID</strong> is the patient's appointment number
-            — they present it at reception to confirm arrival.
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight">{t('appointments_title')}</h2>
+          <p className="text-muted-foreground">{t('appointments_desc')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={refresh}>
-            <RefreshCcw className="w-4 h-4 mr-2" /> Refresh
+            <RefreshCcw className="w-4 h-4 mr-2" /> {t('refresh')}
           </Button>
           <Button asChild variant="outline">
             <a href={sheetEditUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="w-4 h-4 mr-2" /> Open Sheet
+              <ExternalLink className="w-4 h-4 mr-2" /> {t('open_sheet')}
             </a>
           </Button>
         </div>
@@ -53,7 +52,7 @@ export default function Appointments() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-3">
-            <span>Booked Appointments {loading ? '…' : `(${data.length})`}</span>
+            <span>{t('booked_appointments')} {loading ? '…' : `(${data.length})`}</span>
             <div className="flex gap-2">
               <Input
                 type="date"
@@ -66,7 +65,7 @@ export default function Appointments() {
                 <Input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search ID or name"
+                  placeholder={t('search_id_or_name')}
                   className="pl-8 w-56"
                 />
               </div>
@@ -76,26 +75,26 @@ export default function Appointments() {
         <CardContent>
           {error && (
             <div className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
-              Failed to load sheet: {error}
+              {t('load_sheet_failed')}: {error}
             </div>
           )}
           <div className="overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Appt #</TableHead>
-                  <TableHead>Patient</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Notes</TableHead>
+                  <TableHead>{t('appt_number')}</TableHead>
+                  <TableHead>{t('patient')}</TableHead>
+                  <TableHead>{t('date')}</TableHead>
+                  <TableHead>{t('time')}</TableHead>
+                  <TableHead>{t('type')}</TableHead>
+                  <TableHead>{t('notes')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      {loading ? 'Loading…' : 'No appointments found.'}
+                      {loading ? t('loading') : t('no_appointments')}
                     </TableCell>
                   </TableRow>
                 )}
