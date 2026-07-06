@@ -4,9 +4,11 @@ import { PatientForm } from '@/components/forms/PatientForm';
 import { Patient } from '@/types';
 import { useNavigate } from 'react-router-dom';
 import { mockPatients } from '@/store/mockData';
+import { useT } from '@/contexts/LanguageContext';
 
 export default function Patients() {
   const navigate = useNavigate();
+  const t = useT();
   const [showPatientForm, setShowPatientForm] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | undefined>();
   
@@ -39,10 +41,8 @@ export default function Patients() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Patients</h2>
-        <p className="text-muted-foreground">
-          Manage patient records and information
-        </p>
+        <h2 className="text-3xl font-bold tracking-tight">{t('patients_title')}</h2>
+        <p className="text-muted-foreground">{t('patients_desc')}</p>
       </div>
 
       <PatientList
