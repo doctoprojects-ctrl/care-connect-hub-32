@@ -27,6 +27,13 @@ export const translations = {
     login_error_title: 'Login error',
     login_error_desc: 'An error occurred during login. Please try again.',
     demo_users: 'Demo Users:',
+    role_admin: 'Admin',
+    role_doctor: 'Doctor',
+    role_reception: 'Reception',
+    role_cashier: 'Cashier',
+    role_supervisor: 'Supervisor',
+    role_marketing: 'Marketing',
+    role_patient: 'Patient',
 
     // Sidebar / nav
     nav_dashboard: 'Dashboard',
