@@ -51,7 +51,7 @@ export function Header({ currentUser }: HeaderProps) {
               {currentUser.firstName} {currentUser.lastName}
             </span>
             <span className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded">
-              {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
+              {t(`role_${currentUser.role}` as any)}
             </span>
           </div>
           
