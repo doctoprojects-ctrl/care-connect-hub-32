@@ -8,10 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { mockInvoices, mockPatients } from '@/store/mockData';
 import { Printer, FileText } from 'lucide-react';
 import { clinicConfig, money } from '@/lib/clinicConfig';
+import { useT } from '@/contexts/LanguageContext';
 
 const monthOf = (iso: string) => iso.slice(0, 7);
 
 export default function Statements() {
+  const t = useT();
   const [params] = useSearchParams();
   const [patientId, setPatientId] = useState<string>(params.get('patient') || '');
   const todayMonth = new Date().toISOString().slice(0, 7);
@@ -47,7 +49,7 @@ export default function Statements() {
       rows.push({ date: inv.issuedDate, ref: inv.invoiceNumber, description: inv.lines.map((l) => l.description).join(', '), charge: inv.total, payment: 0, balance: running });
       if (inv.amountPaid > 0) {
         running -= inv.amountPaid;
-        rows.push({ date: inv.issuedDate, ref: inv.invoiceNumber + '-PMT', description: 'Payment received', charge: 0, payment: inv.amountPaid, balance: running });
+          rows.push({ date: inv.issuedDate, ref: inv.invoiceNumber + '-PMT', description: t('payment_received'), charge: 0, payment: inv.amountPaid, balance: running });
       }
     }
 
@@ -70,16 +72,16 @@ export default function Statements() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2"><FileText className="w-7 h-7" />Client Statements</h2>
-        <p className="text-muted-foreground">Monthly account statement with aging breakdown</p>
+        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2"><FileText className="w-7 h-7" />{t('statements_title')}</h2>
+        <p className="text-muted-foreground">{t('statements_desc')}</p>
       </div>
 
       <Card className="print:hidden">
         <CardContent className="pt-6 grid sm:grid-cols-3 gap-3">
           <div>
-            <Label>Patient</Label>
+            <Label>{t('patient')}</Label>
             <Select value={patientId} onValueChange={setPatientId}>
-              <SelectTrigger><SelectValue placeholder="Select patient" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t('select_patient')} /></SelectTrigger>
               <SelectContent>
                 {mockPatients.map((p) => (
                   <SelectItem key={p.id} value={p.id}>{p.firstName} {p.lastName}</SelectItem>
@@ -88,11 +90,11 @@ export default function Statements() {
             </Select>
           </div>
           <div>
-            <Label>Statement month</Label>
+            <Label>{t('statement_month')}</Label>
             <input type="month" className="w-full h-10 px-3 rounded-md border bg-background" value={month} onChange={(e) => setMonth(e.target.value)} />
           </div>
           <div className="flex items-end">
-            <Button className="w-full" onClick={() => window.print()} disabled={!patient}><Printer className="w-4 h-4 mr-2" />Print Statement</Button>
+            <Button className="w-full" onClick={() => window.print()} disabled={!patient}><Printer className="w-4 h-4 mr-2" />{t('print_statement')}</Button>
           </div>
         </CardContent>
       </Card>
@@ -107,36 +109,36 @@ export default function Statements() {
                 <p className="text-xs text-muted-foreground">{clinicConfig.phone} · {clinicConfig.email}</p>
               </div>
               <div className="text-right">
-                <div className="text-xl font-semibold">STATEMENT OF ACCOUNT</div>
-                <div className="text-sm text-muted-foreground">Period: {month}</div>
+                <div className="text-xl font-semibold">{t('statement_of_account')}</div>
+                <div className="text-sm text-muted-foreground">{t('period')}: {month}</div>
               </div>
             </div>
             <div className="border-t mt-3 pt-3 grid sm:grid-cols-2 gap-1 text-sm">
-              <div><strong>Billed to:</strong> {patient.firstName} {patient.lastName}</div>
-              <div><strong>Patient ID:</strong> {patient.id}</div>
+              <div><strong>{t('billed_to')}:</strong> {patient.firstName} {patient.lastName}</div>
+              <div><strong>{t('patient_id')}:</strong> {patient.id}</div>
               <div>{patient.address}</div>
               <div>{patient.phone} · {patient.email}</div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between text-sm">
-              <span>Opening balance ({month})</span>
+              <span>{t('opening_balance')} ({month})</span>
               <strong>{money(data.openingBalance)}</strong>
             </div>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Charge</TableHead>
-                  <TableHead className="text-right">Payment</TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
+                  <TableHead>{t('date')}</TableHead>
+                  <TableHead>{t('reference')}</TableHead>
+                  <TableHead>{t('description')}</TableHead>
+                  <TableHead className="text-right">{t('charge')}</TableHead>
+                  <TableHead className="text-right">{t('payment')}</TableHead>
+                  <TableHead className="text-right">{t('balance')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.rows.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No transactions for this month.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">{t('no_transactions_month')}</TableCell></TableRow>
                 ) : data.rows.map((r, i) => (
                   <TableRow key={i}>
                     <TableCell>{r.date}</TableCell>
@@ -151,14 +153,14 @@ export default function Statements() {
             </Table>
 
             <div className="flex justify-between text-base border-t pt-3">
-              <span className="font-semibold">Closing balance</span>
+              <span className="font-semibold">{t('closing_balance')}</span>
               <span className="text-xl font-bold">{money(data.closingBalance)}</span>
             </div>
 
             <div>
-              <CardTitle className="text-base mb-2">Aging</CardTitle>
+              <CardTitle className="text-base mb-2">{t('aging')}</CardTitle>
               <div className="grid grid-cols-4 gap-3 text-sm">
-                <div className="border rounded-md p-3"><div className="text-muted-foreground text-xs">Current (0-30)</div><div className="font-semibold">{money(data.buckets.current)}</div></div>
+                <div className="border rounded-md p-3"><div className="text-muted-foreground text-xs">{t('aging_current')}</div><div className="font-semibold">{money(data.buckets.current)}</div></div>
                 <div className="border rounded-md p-3"><div className="text-muted-foreground text-xs">31-60</div><div className="font-semibold">{money(data.buckets.d30)}</div></div>
                 <div className="border rounded-md p-3"><div className="text-muted-foreground text-xs">61-90</div><div className="font-semibold">{money(data.buckets.d60)}</div></div>
                 <div className="border rounded-md p-3"><div className="text-muted-foreground text-xs">90+</div><div className="font-semibold text-destructive">{money(data.buckets.d90)}</div></div>
@@ -175,7 +177,7 @@ export default function Statements() {
       {!patient && (
         <Card>
           <CardContent className="pt-6 text-center text-muted-foreground">
-            <CardDescription>Select a patient above to generate their statement.</CardDescription>
+            <CardDescription>{t('select_patient_statement')}</CardDescription>
           </CardContent>
         </Card>
       )}
