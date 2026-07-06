@@ -331,6 +331,13 @@ export const translations = {
     login_error_title: 'Erreur de connexion',
     login_error_desc: "Une erreur s'est produite lors de la connexion. Veuillez réessayer.",
     demo_users: 'Utilisateurs de démo :',
+    role_admin: 'Administrateur',
+    role_doctor: 'Médecin',
+    role_reception: 'Réception',
+    role_cashier: 'Caissier(ère)',
+    role_supervisor: 'Superviseur',
+    role_marketing: 'Marketing',
+    role_patient: 'Patient',
 
     // Sidebar / nav
     nav_dashboard: 'Tableau de bord',
