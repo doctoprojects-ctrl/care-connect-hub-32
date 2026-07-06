@@ -6,11 +6,14 @@ export default function Manual() {
   const t = useT();
 
   const sections = [
+    { h: t('manual_login_h'), b: t('manual_login_b') },
     { h: t('manual_admin_h'), b: t('manual_admin_b') },
     { h: t('manual_doctor_h'), b: t('manual_doctor_b') },
     { h: t('manual_reception_h'), b: t('manual_reception_b') },
     { h: t('manual_cashier_h'), b: t('manual_cashier_b') },
     { h: t('manual_supervisor_h'), b: t('manual_supervisor_b') },
+    { h: t('manual_qr_h'), b: t('manual_qr_b') },
+    { h: t('manual_pharmacy_h'), b: t('manual_pharmacy_b') },
     { h: t('manual_lang_h'), b: t('manual_lang_b') },
   ];
 
