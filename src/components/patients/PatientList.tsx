@@ -8,6 +8,7 @@ import { Plus, Search, Edit, Eye } from 'lucide-react';
 import { Patient } from '@/types';
 import { mockPatients } from '@/store/mockData';
 import { useDataVersion } from '@/lib/supabaseSync';
+import { useT } from '@/contexts/LanguageContext';
 
 interface PatientListProps {
   onPatientSelect?: (patient: Patient) => void;
@@ -17,6 +18,7 @@ interface PatientListProps {
 
 export function PatientList({ onPatientSelect, onAddPatient, onEditPatient }: PatientListProps) {
   useDataVersion();
+  const t = useT();
   const patients = mockPatients;
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -46,17 +48,17 @@ export function PatientList({ onPatientSelect, onAddPatient, onEditPatient }: Pa
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Patients</CardTitle>
+          <CardTitle>{t('patients_title')}</CardTitle>
           <Button onClick={onAddPatient}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Patient
+            {t('add_patient')}
           </Button>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Search patients..."
+              placeholder={t('search_patients')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -68,13 +70,13 @@ export function PatientList({ onPatientSelect, onAddPatient, onEditPatient }: Pa
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Age</TableHead>
-              <TableHead>Gender</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Last Visit</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t('name')}</TableHead>
+              <TableHead>{t('age')}</TableHead>
+              <TableHead>{t('gender')}</TableHead>
+              <TableHead>{t('phone')}</TableHead>
+              <TableHead>{t('email')}</TableHead>
+              <TableHead>{t('last_visit')}</TableHead>
+              <TableHead>{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
