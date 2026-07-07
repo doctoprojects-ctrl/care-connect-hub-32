@@ -30,6 +30,7 @@ import Doctors from "./pages/Doctors";
 import Queue from "./pages/Queue";
 import QueueDisplay from "./pages/QueueDisplay";
 import AdsDisplay from "./pages/Ads";
+import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,9 @@ const AppContent = () => {
             )}
             {user?.role === 'admin' && (
               <Route path="/users" element={<Users />} />
+            )}
+            {user?.role === 'admin' && (
+              <Route path="/settings" element={<SettingsPage />} />
             )}
             {(user?.role === 'admin' || user?.role === 'reception') && (
               <Route path="/qr-generator" element={<QRGenerator />} />
