@@ -304,6 +304,22 @@ export const translations = {
     manual_login_h: 'Login',
     manual_login_b:
       'Every user signs in with a username and PIN (up to 15 characters). The default administrator is Elton / PIN 301277.',
+
+    manual_flow_h: 'End-to-End Patient Journey',
+    manual_flow_b:
+      '1) BOOKING — The patient scans the practice QR code (from QR Generator) which opens the public booking page. They fill in name, phone, email, date of birth, then pick a doctor, date, time and appointment type. On submit the system saves the appointment and shows a unique booking number (APP-XXXXXX). The patient keeps this number.  2) LIVE SYNC — The booking is written straight to the app database and appears in Appointments in real time (marked "QR"). Reception does not need to refresh.  3) ARRIVAL & QUEUE — On arrival the patient gives the APP-XXXXXX number at reception. Reception searches Appointments by that number, confirms the patient, and issues a queue ticket (Doctor / Triage / Pharmacy). The ticket number appears on the public queue display screen.  4) VITALS — When called, the nurse captures vitals (BP, temp, weight, height, etc.) in the patient file.  5) DOCTOR CONSULTATION — The doctor opens the patient file, reviews history, writes the consultation note, adds diagnoses, prescription line items (drug, qty, price, instructions) and, if needed, a medical certificate. Notes are saved to the patient file and can be printed for the hard-copy folder. The prescription is pushed automatically to Pharmacy.  6) BILLING — Reception creates the invoice for the consultation and any services. Payment is captured (cash / card / mobile) or the balance is booked to Patient Credits and rolled into the monthly Statement.  7) PHARMACY — The pharmacy sees the prescription under Prescriptions. Cashier or Admin marks it Paid, then Pharmacy dispenses — stock is automatically decremented and a slip can be printed.  8) CASH UP — At end of shift the cashier runs Cash Up: expected vs counted (cash, card, mobile) is recorded and closed.  9) REPORTS — Admin / Supervisor review Reports, Statements and Patient Credits for the day, week or month.',
+
+    manual_reception_flow_h: 'Reception – Step by Step',
+    manual_reception_flow_b:
+      'a) Open Appointments — QR bookings appear live with an APP-XXXXXX number.  b) Ask the patient for their number, filter the list, click confirm.  c) Register a new patient if walk-in.  d) Issue a queue ticket for Doctor / Triage / Pharmacy.  e) After the visit, open Invoices, create an invoice for the services delivered, take payment or push to Credits.  f) At end of day balance the till with Cash Up.',
+
+    manual_doctor_flow_h: 'Doctor – Step by Step',
+    manual_doctor_flow_b:
+      'a) Open My Appointments to see today\'s queue.  b) Click the patient to open the file — vitals, allergies, history are visible.  c) Add a Consultation note (symptoms, examination, diagnosis).  d) Add prescription items (name, quantity, price, instructions).  e) Print the note for the hard-copy file if needed.  f) Save — prescription is sent to Pharmacy automatically.',
+
+    manual_pharmacy_flow_h: 'Pharmacy – Step by Step',
+    manual_pharmacy_flow_b:
+      'a) Open Pharmacy → Prescriptions tab.  b) Verify the prescription is marked Paid (Cashier/Admin marks paid after billing).  c) Click Dispense — stock is auto-deducted from matching items.  d) Print the Rx slip for filing.  e) Use the POS tab for over-the-counter sales and barcode scanning.',
   },
 
   fr: {
@@ -608,6 +624,22 @@ export const translations = {
     manual_login_h: 'Connexion',
     manual_login_b:
       "Chaque utilisateur se connecte avec un nom d'utilisateur et un code PIN (jusqu’à 15 caractères). L’administrateur par défaut est Elton / PIN 301277.",
+
+    manual_flow_h: 'Parcours complet du patient',
+    manual_flow_b:
+      "1) RÉSERVATION — Le patient scanne le code QR du cabinet (module Générateur QR) qui ouvre la page publique de réservation. Il saisit nom, téléphone, email, date de naissance, puis choisit médecin, date, heure et type de rendez-vous. À la validation, le système enregistre le rendez-vous et affiche un numéro unique (APP-XXXXXX). Le patient conserve ce numéro.  2) SYNCHRONISATION EN DIRECT — La réservation est enregistrée directement dans la base et apparaît immédiatement dans Rendez-vous (badge « QR »). La réception n'a pas besoin d'actualiser.  3) ARRIVÉE & FILE — À l'arrivée, le patient donne le numéro APP-XXXXXX. La réception le recherche, confirme le patient et émet un ticket de file (Médecin / Triage / Pharmacie). Le numéro s'affiche à l'écran public.  4) CONSTANTES — À l'appel, l'infirmier(ère) saisit les constantes (TA, temp., poids, taille, etc.) dans le dossier.  5) CONSULTATION — Le médecin ouvre le dossier, revoit l'historique, rédige la note, ajoute diagnostics, lignes d'ordonnance (médicament, quantité, prix, posologie) et, si besoin, un certificat médical. Les notes sont enregistrées et imprimables. L'ordonnance est envoyée automatiquement à la pharmacie.  6) FACTURATION — La réception crée la facture (consultation + actes). Encaissement (espèces / carte / mobile) ou report en Crédits patients et relevé mensuel.  7) PHARMACIE — La pharmacie voit l'ordonnance. Caissier(ère) ou Administrateur marque Payée, puis Dispensée — le stock est décrémenté automatiquement et un bon peut être imprimé.  8) CLÔTURE — En fin de service, le caissier réalise la Clôture de caisse : attendu vs compté (espèces, carte, mobile) puis clôture.  9) RAPPORTS — Administrateur / Superviseur consultent Rapports, Relevés et Crédits patients du jour, de la semaine ou du mois.",
+
+    manual_reception_flow_h: 'Réception – Étape par étape',
+    manual_reception_flow_b:
+      "a) Ouvrir Rendez-vous — les réservations QR s'affichent en direct avec un numéro APP-XXXXXX.  b) Demander son numéro au patient, filtrer, confirmer.  c) Enregistrer un nouveau patient si sans rendez-vous.  d) Émettre un ticket de file (Médecin / Triage / Pharmacie).  e) Après la consultation, créer la facture, encaisser ou reporter en Crédits.  f) En fin de journée, équilibrer la caisse via Clôture.",
+
+    manual_doctor_flow_h: 'Médecin – Étape par étape',
+    manual_doctor_flow_b:
+      "a) Ouvrir Mes rendez-vous pour voir la file du jour.  b) Cliquer sur le patient pour ouvrir le dossier — constantes, allergies, historique.  c) Ajouter une note de consultation (symptômes, examen, diagnostic).  d) Ajouter les lignes d'ordonnance (nom, quantité, prix, posologie).  e) Imprimer la note pour le dossier papier si besoin.  f) Enregistrer — l'ordonnance part automatiquement à la pharmacie.",
+
+    manual_pharmacy_flow_h: 'Pharmacie – Étape par étape',
+    manual_pharmacy_flow_b:
+      "a) Ouvrir Pharmacie → onglet Ordonnances.  b) Vérifier que l'ordonnance est Payée (marquée par le caissier / administrateur après facturation).  c) Cliquer Dispenser — le stock est déduit automatiquement.  d) Imprimer le bon pour classement.  e) Utiliser l'onglet POS pour les ventes libres et le scan des codes-barres.",
   },
 } as const;
 

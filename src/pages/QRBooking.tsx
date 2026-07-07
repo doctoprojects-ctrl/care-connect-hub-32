@@ -17,6 +17,7 @@ export default function QRBooking() {
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [appointmentType, setAppointmentType] = useState('');
+  const [confirmation, setConfirmation] = useState<{ code: string; date: string; time: string } | null>(null);
 
   useEffect(() => {
     supabase.from('doctors').select('*').eq('is_active', true).then(({ data }) => {
@@ -60,7 +61,7 @@ export default function QRBooking() {
       }).select().single();
       if (pErr || !patient) throw pErr ?? new Error('Patient create failed');
 
-      const { error: aErr } = await supabase.from('appointments').insert({
+      const { data: appt, error: aErr } = await supabase.from('appointments').insert({
         patient_id: patient.id,
         doctor_id: selectedDoctor,
         appointment_date: selectedDate.toISOString().split('T')[0],
@@ -69,10 +70,12 @@ export default function QRBooking() {
         type: appointmentType,
         status: 'scheduled',
         notes: patientInfo.notes || null,
-      });
+      }).select().single();
       if (aErr) throw aErr;
 
-      toast({ title: 'Appointment requested', description: 'Reception will confirm shortly.' });
+      const code = `APP-${String(appt!.id).slice(0, 6).toUpperCase()}`;
+      setConfirmation({ code, date: selectedDate.toISOString().split('T')[0], time: selectedTime });
+      toast({ title: 'Appointment booked', description: `Your number: ${code}` });
       setPatientInfo({ firstName: '', lastName: '', phone: '', email: '', dateOfBirth: '', notes: '' });
       setSelectedDate(undefined); setSelectedTime(''); setSelectedDoctor(''); setAppointmentType('');
     } catch (e: any) {
@@ -101,6 +104,24 @@ export default function QRBooking() {
             Please fill in your details to schedule an appointment with our medical professionals
           </p>
         </div>
+
+        {confirmation && (
+          <Card className="mb-6 border-primary bg-primary/5">
+            <CardContent className="py-6 text-center space-y-2">
+              <p className="text-sm text-muted-foreground">Your appointment number</p>
+              <p className="text-4xl font-bold tracking-widest text-primary">{confirmation.code}</p>
+              <p className="text-sm">
+                {confirmation.date} at {confirmation.time}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Please save this number and present it at reception on arrival to be added to the queue.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => setConfirmation(null)}>
+                Book another
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Patient Information */}

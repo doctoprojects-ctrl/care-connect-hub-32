@@ -7,6 +7,10 @@ export default function Manual() {
 
   const sections = [
     { h: t('manual_login_h'), b: t('manual_login_b') },
+    { h: t('manual_flow_h'), b: t('manual_flow_b') },
+    { h: t('manual_reception_flow_h'), b: t('manual_reception_flow_b') },
+    { h: t('manual_doctor_flow_h'), b: t('manual_doctor_flow_b') },
+    { h: t('manual_pharmacy_flow_h'), b: t('manual_pharmacy_flow_b') },
     { h: t('manual_admin_h'), b: t('manual_admin_b') },
     { h: t('manual_doctor_h'), b: t('manual_doctor_b') },
     { h: t('manual_reception_h'), b: t('manual_reception_b') },
@@ -32,7 +36,7 @@ export default function Manual() {
               <CardTitle className="text-lg">{s.h}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              {s.b}
+              <p className="whitespace-pre-line">{s.b}</p>
             </CardContent>
           </Card>
         ))}
