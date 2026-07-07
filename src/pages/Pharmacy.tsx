@@ -334,22 +334,22 @@ export default function Pharmacy() {
         <TabsContent value="items" className="space-y-4">
           <div className="flex justify-end">
             <Dialog open={itemDialog} onOpenChange={setItemDialog}>
-              <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Item</Button></DialogTrigger>
+              <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />{t('pharm_add_item')}</Button></DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>New Pharmacy Item</DialogTitle><DialogDescription>Barcode auto-generated if blank</DialogDescription></DialogHeader>
+                <DialogHeader><DialogTitle>{t('pharm_new_item')}</DialogTitle><DialogDescription>{t('pharm_barcode_auto')}</DialogDescription></DialogHeader>
                 <div className="space-y-3">
-                  <div><Label>Name</Label><Input value={itemForm.name || ''} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })} /></div>
+                  <div><Label>{t('pharm_name')}</Label><Input value={itemForm.name || ''} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })} /></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label>Category</Label><Input value={itemForm.category || ''} onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} /></div>
-                    <div><Label>Supplier</Label><Input value={itemForm.supplier || ''} onChange={(e) => setItemForm({ ...itemForm, supplier: e.target.value })} /></div>
+                    <div><Label>{t('pharm_category')}</Label><Input value={itemForm.category || ''} onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} /></div>
+                    <div><Label>{t('pharm_supplier')}</Label><Input value={itemForm.supplier || ''} onChange={(e) => setItemForm({ ...itemForm, supplier: e.target.value })} /></div>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <div><Label>Price</Label><Input type="number" value={itemForm.unitPrice ?? 0} onChange={(e) => setItemForm({ ...itemForm, unitPrice: Number(e.target.value) })} /></div>
-                    <div><Label>Stock</Label><Input type="number" value={itemForm.stock ?? 0} onChange={(e) => setItemForm({ ...itemForm, stock: Number(e.target.value) })} /></div>
-                    <div><Label>Reorder</Label><Input type="number" value={itemForm.reorderLevel ?? 0} onChange={(e) => setItemForm({ ...itemForm, reorderLevel: Number(e.target.value) })} /></div>
+                    <div><Label>{t('pharm_price')}</Label><Input type="number" value={itemForm.unitPrice ?? 0} onChange={(e) => setItemForm({ ...itemForm, unitPrice: Number(e.target.value) })} /></div>
+                    <div><Label>{t('pharm_stock')}</Label><Input type="number" value={itemForm.stock ?? 0} onChange={(e) => setItemForm({ ...itemForm, stock: Number(e.target.value) })} /></div>
+                    <div><Label>{t('pharm_reorder')}</Label><Input type="number" value={itemForm.reorderLevel ?? 0} onChange={(e) => setItemForm({ ...itemForm, reorderLevel: Number(e.target.value) })} /></div>
                   </div>
-                  <div><Label>Barcode (optional)</Label><Input value={itemForm.barcode || ''} onChange={(e) => setItemForm({ ...itemForm, barcode: e.target.value })} /></div>
-                  <Button className="w-full" onClick={handleAddItem}>Add Item</Button>
+                  <div><Label>{t('pharm_barcode_optional')}</Label><Input value={itemForm.barcode || ''} onChange={(e) => setItemForm({ ...itemForm, barcode: e.target.value })} /></div>
+                  <Button className="w-full" onClick={handleAddItem}>{t('pharm_add_item')}</Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -358,7 +358,7 @@ export default function Pharmacy() {
             <CardContent className="pt-6">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead>Name</TableHead><TableHead>Barcode</TableHead><TableHead>Category</TableHead><TableHead>Price</TableHead><TableHead>Stock</TableHead><TableHead>Actions</TableHead>
+                  <TableHead>{t('pharm_name')}</TableHead><TableHead>{t('eq_barcode')}</TableHead><TableHead>{t('pharm_category')}</TableHead><TableHead>{t('pharm_price')}</TableHead><TableHead>{t('pharm_stock')}</TableHead><TableHead>{t('eq_actions')}</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {items.map((it) => (
