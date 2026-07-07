@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { mockInvoices, mockPatients } from '@/store/mockData';
 import { Printer, FileText } from 'lucide-react';
 import { clinicConfig, money } from '@/lib/clinicConfig';
+import { useClinicConfig } from '@/lib/clinicConfig';
 import { useT } from '@/contexts/LanguageContext';
 
 const monthOf = (iso: string) => iso.slice(0, 7);
 
 export default function Statements() {
   const t = useT();
+  const cfg = useClinicConfig();
   const [params] = useSearchParams();
   const [patientId, setPatientId] = useState<string>(params.get('patient') || '');
   const todayMonth = new Date().toISOString().slice(0, 7);
@@ -103,10 +105,13 @@ export default function Statements() {
         <Card className="bg-white text-black print:shadow-none print:border-0">
           <CardHeader>
             <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-2xl font-bold">{clinicConfig.name}</h1>
-                <p className="text-xs text-muted-foreground">{clinicConfig.address}</p>
-                <p className="text-xs text-muted-foreground">{clinicConfig.phone} · {clinicConfig.email}</p>
+              <div className="flex items-center gap-3">
+                {cfg.logoDataUrl && <img src={cfg.logoDataUrl} alt="logo" className="max-h-16 object-contain" />}
+                <div>
+                  <h1 className="text-2xl font-bold">{cfg.name}</h1>
+                  <p className="text-xs text-muted-foreground">{cfg.address}</p>
+                  <p className="text-xs text-muted-foreground">{cfg.phone} · {cfg.email}</p>
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-xl font-semibold">{t('statement_of_account')}</div>
