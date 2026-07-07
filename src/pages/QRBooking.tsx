@@ -105,6 +105,24 @@ export default function QRBooking() {
           </p>
         </div>
 
+        {confirmation && (
+          <Card className="mb-6 border-primary bg-primary/5">
+            <CardContent className="py-6 text-center space-y-2">
+              <p className="text-sm text-muted-foreground">Your appointment number</p>
+              <p className="text-4xl font-bold tracking-widest text-primary">{confirmation.code}</p>
+              <p className="text-sm">
+                {confirmation.date} at {confirmation.time}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Please save this number and present it at reception on arrival to be added to the queue.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => setConfirmation(null)}>
+                Book another
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Patient Information */}
           <Card>
