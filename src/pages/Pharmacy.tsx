@@ -16,11 +16,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Plus, ScanLine, Trash2, Printer, Pill, CheckCircle2, DollarSign } from 'lucide-react';
 import { usePrescriptions, markPrescriptionPaid, dispensePrescription, cancelPrescription } from '@/lib/prescriptionsStore';
+import { useT } from '@/contexts/LanguageContext';
+import { getClinicConfig } from '@/lib/clinicConfig';
 
 const genBarcode = () => '6' + Math.floor(100000000000 + Math.random() * 899999999999).toString();
 
 export default function Pharmacy() {
   const { user } = useAuth();
+  const t = useT();
   const [items, setItems] = useState<PharmacyItem[]>(mockPharmacyItems);
   const [grvs, setGRVs] = useState<GoodsReceivedVoucher[]>(mockGRVs);
   const [sales, setSales] = useState<Sale[]>(mockSales);
@@ -169,20 +172,20 @@ export default function Pharmacy() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Pharmacy</h2>
-        <p className="text-muted-foreground">Items, GRV, POS sales and stock take</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t('pharm_title')}</h2>
+        <p className="text-muted-foreground">{t('pharm_desc')}</p>
       </div>
 
       <Tabs defaultValue={defaultTab}>
         <TabsList>
-          {canSell && <TabsTrigger value="sales">POS Sales</TabsTrigger>}
+          {canSell && <TabsTrigger value="sales">{t('pharm_tab_sales')}</TabsTrigger>}
           <TabsTrigger value="prescriptions">
-            Prescriptions{pendingRx.length > 0 && <Badge variant="destructive" className="ml-2">{pendingRx.length}</Badge>}
+            {t('pharm_tab_prescriptions')}{pendingRx.length > 0 && <Badge variant="destructive" className="ml-2">{pendingRx.length}</Badge>}
           </TabsTrigger>
-          {canManage && <TabsTrigger value="items">Items</TabsTrigger>}
-          {canManage && <TabsTrigger value="grv">GRV (Receive)</TabsTrigger>}
-          {canManage && <TabsTrigger value="stocktake">Stock Take</TabsTrigger>}
-          <TabsTrigger value="history">Sales History</TabsTrigger>
+          {canManage && <TabsTrigger value="items">{t('pharm_tab_items')}</TabsTrigger>}
+          {canManage && <TabsTrigger value="grv">{t('pharm_tab_grv')}</TabsTrigger>}
+          {canManage && <TabsTrigger value="stocktake">{t('pharm_tab_stocktake')}</TabsTrigger>}
+          <TabsTrigger value="history">{t('pharm_tab_history')}</TabsTrigger>
         </TabsList>
 
         {/* POS */}
@@ -191,10 +194,10 @@ export default function Pharmacy() {
             <Card className="lg:col-span-2">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Add Items</CardTitle>
-                  <CardDescription>Scan barcode or click to add</CardDescription>
+                  <CardTitle>{t('pharm_add_items')}</CardTitle>
+                  <CardDescription>{t('pharm_add_items_desc')}</CardDescription>
                 </div>
-                <Button onClick={() => setScannerOpen(true)}><ScanLine className="w-4 h-4 mr-2" />Scan</Button>
+                <Button onClick={() => setScannerOpen(true)}><ScanLine className="w-4 h-4 mr-2" />{t('pharm_scan')}</Button>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -210,15 +213,15 @@ export default function Pharmacy() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Cart</CardTitle>
+                <CardTitle>{t('pharm_cart')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  <Label>Customer</Label>
+                  <Label>{t('pharm_customer')}</Label>
                   <Input value={customer} onChange={(e) => setCustomer(e.target.value)} />
                 </div>
                 <div className="space-y-2 max-h-72 overflow-auto">
-                  {cart.length === 0 && <p className="text-sm text-muted-foreground">No items</p>}
+                  {cart.length === 0 && <p className="text-sm text-muted-foreground">{t('pharm_no_items')}</p>}
                   {cart.map((l) => (
                     <div key={l.itemId} className="flex items-center justify-between border-b pb-2">
                       <div className="text-sm">
@@ -233,17 +236,17 @@ export default function Pharmacy() {
                   ))}
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                  <span>Total</span><span>${cartTotal.toFixed(2)}</span>
+                  <span>{t('pharm_total')}</span><span>${cartTotal.toFixed(2)}</span>
                 </div>
                 <Select value={payMethod} onValueChange={(v: any) => setPayMethod(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="mobile">Mobile</SelectItem>
+                    <SelectItem value="cash">{t('pharm_pay_cash')}</SelectItem>
+                    <SelectItem value="card">{t('pharm_pay_card')}</SelectItem>
+                    <SelectItem value="mobile">{t('pharm_pay_mobile')}</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button className="w-full" onClick={completeSale} disabled={cart.length === 0}>Complete Sale</Button>
+                <Button className="w-full" onClick={completeSale} disabled={cart.length === 0}>{t('pharm_complete_sale')}</Button>
               </CardContent>
             </Card>
           </div>
@@ -253,11 +256,11 @@ export default function Pharmacy() {
         <TabsContent value="prescriptions" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Pill className="w-5 h-5" />Doctor Prescriptions</CardTitle>
-              <CardDescription>Admin marks as paid, then pharmacy dispenses.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Pill className="w-5 h-5" />{t('pharm_doctor_rx')}</CardTitle>
+              <CardDescription>{t('pharm_rx_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
-              {prescriptions.length === 0 && <p className="text-muted-foreground text-sm">No prescriptions yet.</p>}
+              {prescriptions.length === 0 && <p className="text-muted-foreground text-sm">{t('pharm_no_rx')}</p>}
               <div className="space-y-3">
                 {prescriptions.map((rx) => (
                   <div key={rx.id} className="border rounded-md p-3 space-y-2">
@@ -268,12 +271,12 @@ export default function Pharmacy() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={rx.status === 'dispensed' ? 'default' : rx.status === 'cancelled' ? 'secondary' : 'outline'}>{rx.status}</Badge>
-                        <Badge variant={rx.paid ? 'default' : 'destructive'}>{rx.paid ? 'Paid' : 'Unpaid'}</Badge>
+                        <Badge variant={rx.paid ? 'default' : 'destructive'}>{rx.paid ? t('pharm_paid') : t('pharm_unpaid')}</Badge>
                         <span className="text-sm font-semibold">${rx.total.toFixed(2)}</span>
                       </div>
                     </div>
                     <Table>
-                      <TableHeader><TableRow><TableHead>Medication</TableHead><TableHead>Qty</TableHead><TableHead>Price</TableHead><TableHead>Instructions</TableHead></TableRow></TableHeader>
+                      <TableHeader><TableRow><TableHead>{t('pharm_medication')}</TableHead><TableHead>{t('pharm_qty')}</TableHead><TableHead>{t('pharm_price')}</TableHead><TableHead>{t('pharm_instructions')}</TableHead></TableRow></TableHeader>
                       <TableBody>
                         {rx.items.map((it, i) => (
                           <TableRow key={i}>
@@ -285,12 +288,12 @@ export default function Pharmacy() {
                         ))}
                       </TableBody>
                     </Table>
-                    {rx.notes && <p className="text-xs text-muted-foreground">Note: {rx.notes}</p>}
+                    {rx.notes && <p className="text-xs text-muted-foreground">{t('pharm_note')}: {rx.notes}</p>}
                     {rx.status === 'pending' && (
                       <div className="flex flex-wrap gap-2">
                         {isAdmin && !rx.paid && (
                           <Button size="sm" onClick={async () => { await markPrescriptionPaid(rx.id, `${user?.firstName} ${user?.lastName}`); toast({ title: 'Marked paid' }); }}>
-                            <DollarSign className="w-4 h-4 mr-1" />Mark Paid
+                            <DollarSign className="w-4 h-4 mr-1" />{t('pharm_mark_paid')}
                           </Button>
                         )}
                         <Button size="sm" variant="default" disabled={!rx.paid || !canSell} onClick={async () => {
@@ -302,20 +305,22 @@ export default function Pharmacy() {
                           await dispensePrescription(rx.id, `${user?.firstName} ${user?.lastName}`);
                           toast({ title: 'Dispensed', description: rx.patientName });
                         }}>
-                          <CheckCircle2 className="w-4 h-4 mr-1" />Dispense
+                          <CheckCircle2 className="w-4 h-4 mr-1" />{t('pharm_dispense')}
                         </Button>
                         {isAdmin && (
-                          <Button size="sm" variant="ghost" onClick={async () => { await cancelPrescription(rx.id); }}>Cancel</Button>
+                          <Button size="sm" variant="ghost" onClick={async () => { await cancelPrescription(rx.id); }}>{t('pharm_cancel')}</Button>
                         )}
                         <Button size="sm" variant="outline" onClick={() => {
+                          const cfg = getClinicConfig();
                           const w = window.open('', '_blank', 'width=700,height=800'); if (!w) return;
-                          w.document.write(`<!doctype html><html><head><title>Rx</title><style>body{font-family:system-ui;padding:24px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left}</style></head><body>
+                          w.document.write(`<!doctype html><html><head><title>Rx</title><style>body{font-family:system-ui;padding:24px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left}.hdr{display:flex;gap:12px;align-items:center;border-bottom:2px solid #333;padding-bottom:12px;margin-bottom:12px}.hdr img{max-height:64px;max-width:120px}.hdr h1{margin:0;font-size:20px}.hdr p{margin:0;font-size:12px;color:#555}</style></head><body>
+                          <div class="hdr">${cfg.logoDataUrl ? `<img src="${cfg.logoDataUrl}" alt="logo"/>` : ''}<div><h1>${cfg.name}</h1><p>${cfg.address}</p><p>${cfg.phone} · ${cfg.email}</p></div></div>
                           <h2>Prescription</h2><p><b>${rx.patientName}</b> · ${new Date(rx.createdAt).toLocaleDateString()} · ${rx.doctorName || ''}</p>
                           <table><thead><tr><th>Medication</th><th>Qty</th><th>Instructions</th></tr></thead><tbody>
                           ${rx.items.map((i) => `<tr><td>${i.name}</td><td>${i.quantity}</td><td>${i.instructions || ''}</td></tr>`).join('')}
                           </tbody></table>${rx.notes ? `<p>Note: ${rx.notes}</p>` : ''}</body></html>`);
                           w.document.close(); setTimeout(() => w.print(), 300);
-                        }}><Printer className="w-4 h-4 mr-1" />Print</Button>
+                        }}><Printer className="w-4 h-4 mr-1" />{t('pharm_print')}</Button>
                       </div>
                     )}
                   </div>
