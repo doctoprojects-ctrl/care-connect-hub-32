@@ -17,6 +17,7 @@ export default function QRBooking() {
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [appointmentType, setAppointmentType] = useState('');
+  const [confirmation, setConfirmation] = useState<{ code: string; date: string; time: string } | null>(null);
 
   useEffect(() => {
     supabase.from('doctors').select('*').eq('is_active', true).then(({ data }) => {
@@ -60,7 +61,7 @@ export default function QRBooking() {
       }).select().single();
       if (pErr || !patient) throw pErr ?? new Error('Patient create failed');
 
-      const { error: aErr } = await supabase.from('appointments').insert({
+      const { data: appt, error: aErr } = await supabase.from('appointments').insert({
         patient_id: patient.id,
         doctor_id: selectedDoctor,
         appointment_date: selectedDate.toISOString().split('T')[0],
@@ -69,10 +70,12 @@ export default function QRBooking() {
         type: appointmentType,
         status: 'scheduled',
         notes: patientInfo.notes || null,
-      });
+      }).select().single();
       if (aErr) throw aErr;
 
-      toast({ title: 'Appointment requested', description: 'Reception will confirm shortly.' });
+      const code = `APP-${String(appt!.id).slice(0, 6).toUpperCase()}`;
+      setConfirmation({ code, date: selectedDate.toISOString().split('T')[0], time: selectedTime });
+      toast({ title: 'Appointment booked', description: `Your number: ${code}` });
       setPatientInfo({ firstName: '', lastName: '', phone: '', email: '', dateOfBirth: '', notes: '' });
       setSelectedDate(undefined); setSelectedTime(''); setSelectedDoctor(''); setAppointmentType('');
     } catch (e: any) {
