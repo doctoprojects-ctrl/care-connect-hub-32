@@ -16,11 +16,14 @@ import { BarcodeScanner } from '@/components/common/BarcodeScanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Printer, ScanLine, AlertTriangle } from 'lucide-react';
+import { useT } from '@/contexts/LanguageContext';
+import { getClinicConfig } from '@/lib/clinicConfig';
 
 const genEqBarcode = () => 'EQ-' + Math.floor(1000000 + Math.random() * 8999999);
 
 export default function EquipmentPage() {
   const { user } = useAuth();
+  const t = useT();
   const [equipment, setEquipment] = useState<Equipment[]>(mockEquipment);
   const [schedules, setSchedules] = useState<MaintenanceSchedule[]>(mockMaintenanceSchedules);
   const [faulty, setFaulty] = useState<FaultyReport[]>(mockFaultyReports);
@@ -101,47 +104,47 @@ export default function EquipmentPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Equipment</h2>
-          <p className="text-muted-foreground">Inventory, maintenance and fault reporting</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t('eq_title')}</h2>
+          <p className="text-muted-foreground">{t('eq_desc')}</p>
         </div>
-        <Button variant="outline" onClick={() => setScanOpen(true)}><ScanLine className="w-4 h-4 mr-2" />Scan Equipment</Button>
+        <Button variant="outline" onClick={() => setScanOpen(true)}><ScanLine className="w-4 h-4 mr-2" />{t('eq_scan')}</Button>
       </div>
 
       <Tabs defaultValue="list">
         <TabsList>
-          <TabsTrigger value="list">Equipment</TabsTrigger>
-          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-          <TabsTrigger value="faulty">Faulty Reports</TabsTrigger>
+          <TabsTrigger value="list">{t('eq_tab_list')}</TabsTrigger>
+          <TabsTrigger value="maintenance">{t('eq_tab_maintenance')}</TabsTrigger>
+          <TabsTrigger value="faulty">{t('eq_tab_faulty')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="space-y-4">
           <div className="flex justify-end">
             <Dialog open={eqDialog} onOpenChange={setEqDialog}>
-              <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Equipment</Button></DialogTrigger>
+              <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />{t('eq_add')}</Button></DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>New Equipment</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{t('eq_new')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
-                  <div><Label>Name</Label><Input value={eqForm.name || ''} onChange={(e) => setEqForm({ ...eqForm, name: e.target.value })} /></div>
+                  <div><Label>{t('eq_name')}</Label><Input value={eqForm.name || ''} onChange={(e) => setEqForm({ ...eqForm, name: e.target.value })} /></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label>Serial #</Label><Input value={eqForm.serialNumber || ''} onChange={(e) => setEqForm({ ...eqForm, serialNumber: e.target.value })} /></div>
-                    <div><Label>Location</Label><Input value={eqForm.location || ''} onChange={(e) => setEqForm({ ...eqForm, location: e.target.value })} /></div>
+                    <div><Label>{t('eq_serial')}</Label><Input value={eqForm.serialNumber || ''} onChange={(e) => setEqForm({ ...eqForm, serialNumber: e.target.value })} /></div>
+                    <div><Label>{t('eq_location')}</Label><Input value={eqForm.location || ''} onChange={(e) => setEqForm({ ...eqForm, location: e.target.value })} /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label>Purchase Date</Label><Input type="date" value={eqForm.purchaseDate || ''} onChange={(e) => setEqForm({ ...eqForm, purchaseDate: e.target.value })} /></div>
-                    <div><Label>Status</Label>
+                    <div><Label>{t('eq_purchase')}</Label><Input type="date" value={eqForm.purchaseDate || ''} onChange={(e) => setEqForm({ ...eqForm, purchaseDate: e.target.value })} /></div>
+                    <div><Label>{t('eq_status')}</Label>
                       <Select value={eqForm.status as string} onValueChange={(v) => setEqForm({ ...eqForm, status: v as any })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="operational">Operational</SelectItem>
-                          <SelectItem value="maintenance">Maintenance</SelectItem>
-                          <SelectItem value="faulty">Faulty</SelectItem>
-                          <SelectItem value="retired">Retired</SelectItem>
+                          <SelectItem value="operational">{t('eq_status_operational')}</SelectItem>
+                          <SelectItem value="maintenance">{t('eq_status_maintenance')}</SelectItem>
+                          <SelectItem value="faulty">{t('eq_status_faulty')}</SelectItem>
+                          <SelectItem value="retired">{t('eq_status_retired')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                  <div><Label>Barcode (optional)</Label><Input value={eqForm.barcode || ''} onChange={(e) => setEqForm({ ...eqForm, barcode: e.target.value })} /></div>
-                  <Button className="w-full" onClick={addEquipment}>Add Equipment</Button>
+                  <div><Label>{t('pharm_barcode_optional')}</Label><Input value={eqForm.barcode || ''} onChange={(e) => setEqForm({ ...eqForm, barcode: e.target.value })} /></div>
+                  <Button className="w-full" onClick={addEquipment}>{t('eq_add')}</Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -151,7 +154,7 @@ export default function EquipmentPage() {
             <CardContent className="pt-6">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead>Name</TableHead><TableHead>Barcode</TableHead><TableHead>Serial</TableHead><TableHead>Location</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead>
+                  <TableHead>{t('eq_name')}</TableHead><TableHead>{t('eq_barcode')}</TableHead><TableHead>{t('eq_serial')}</TableHead><TableHead>{t('eq_location')}</TableHead><TableHead>{t('eq_status')}</TableHead><TableHead>{t('eq_actions')}</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {equipment.map((e) => (
@@ -163,7 +166,7 @@ export default function EquipmentPage() {
                       <TableCell>
                         <Badge variant={e.status === 'operational' ? 'default' : e.status === 'faulty' ? 'destructive' : 'secondary'}>{e.status}</Badge>
                       </TableCell>
-                      <TableCell><Button size="sm" variant="outline" onClick={() => setPrintEq(e)}><Printer className="w-4 h-4 mr-1" />Barcode</Button></TableCell>
+                      <TableCell><Button size="sm" variant="outline" onClick={() => setPrintEq(e)}><Printer className="w-4 h-4 mr-1" />{t('eq_print_barcode')}</Button></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -174,8 +177,14 @@ export default function EquipmentPage() {
           <Dialog open={!!printEq} onOpenChange={(o) => !o && setPrintEq(null)}>
             <DialogContent>
               <DialogHeader><DialogTitle>{printEq?.name}</DialogTitle></DialogHeader>
+              {getClinicConfig().logoDataUrl && (
+                <div className="flex items-center gap-2 justify-center border-b pb-2">
+                  <img src={getClinicConfig().logoDataUrl} alt="logo" className="max-h-10" />
+                  <span className="font-semibold">{getClinicConfig().name}</span>
+                </div>
+              )}
               <div className="flex justify-center py-4">{printEq && <BarcodeDisplay value={printEq.barcode} />}</div>
-              <Button onClick={() => window.print()}>Print</Button>
+              <Button onClick={() => window.print()}>{t('pharm_print')}</Button>
             </DialogContent>
           </Dialog>
         </TabsContent>
@@ -183,23 +192,23 @@ export default function EquipmentPage() {
         <TabsContent value="maintenance" className="space-y-4">
           <div className="flex justify-end">
             <Dialog open={schedDialog} onOpenChange={setSchedDialog}>
-              <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Schedule</Button></DialogTrigger>
+              <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />{t('eq_schedule')}</Button></DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>Schedule Maintenance</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{t('eq_schedule_maintenance')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
-                  <div><Label>Equipment</Label>
+                  <div><Label>{t('eq_tab_list')}</Label>
                     <Select value={schedForm.equipmentId} onValueChange={(v) => setSchedForm({ ...schedForm, equipmentId: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t('eq_select')} /></SelectTrigger>
                       <SelectContent>{equipment.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label>Date</Label><Input type="date" value={schedForm.scheduledDate || ''} onChange={(e) => setSchedForm({ ...schedForm, scheduledDate: e.target.value })} /></div>
-                    <div><Label>Interval (days)</Label><Input type="number" value={schedForm.intervalDays ?? 90} onChange={(e) => setSchedForm({ ...schedForm, intervalDays: Number(e.target.value) })} /></div>
+                    <div><Label>{t('eq_date')}</Label><Input type="date" value={schedForm.scheduledDate || ''} onChange={(e) => setSchedForm({ ...schedForm, scheduledDate: e.target.value })} /></div>
+                    <div><Label>{t('eq_interval')}</Label><Input type="number" value={schedForm.intervalDays ?? 90} onChange={(e) => setSchedForm({ ...schedForm, intervalDays: Number(e.target.value) })} /></div>
                   </div>
-                  <div><Label>Technician</Label><Input value={schedForm.technician || ''} onChange={(e) => setSchedForm({ ...schedForm, technician: e.target.value })} /></div>
-                  <div><Label>Notes</Label><Textarea value={schedForm.notes || ''} onChange={(e) => setSchedForm({ ...schedForm, notes: e.target.value })} /></div>
-                  <Button className="w-full" onClick={addSchedule}>Save</Button>
+                  <div><Label>{t('eq_technician')}</Label><Input value={schedForm.technician || ''} onChange={(e) => setSchedForm({ ...schedForm, technician: e.target.value })} /></div>
+                  <div><Label>{t('eq_notes')}</Label><Textarea value={schedForm.notes || ''} onChange={(e) => setSchedForm({ ...schedForm, notes: e.target.value })} /></div>
+                  <Button className="w-full" onClick={addSchedule}>{t('save')}</Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -207,7 +216,7 @@ export default function EquipmentPage() {
           <Card>
             <CardContent className="pt-6">
               <Table>
-                <TableHeader><TableRow><TableHead>Equipment</TableHead><TableHead>Date</TableHead><TableHead>Interval</TableHead><TableHead>Technician</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>{t('eq_tab_list')}</TableHead><TableHead>{t('eq_date')}</TableHead><TableHead>{t('eq_interval')}</TableHead><TableHead>{t('eq_technician')}</TableHead><TableHead>{t('eq_status')}</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {schedules.map((s) => (
                     <TableRow key={s.id}>
@@ -227,28 +236,28 @@ export default function EquipmentPage() {
         <TabsContent value="faulty" className="space-y-4">
           <div className="flex justify-end">
             <Dialog open={faultDialog} onOpenChange={setFaultDialog}>
-              <DialogTrigger asChild><Button variant="destructive"><AlertTriangle className="w-4 h-4 mr-2" />Report Faulty</Button></DialogTrigger>
+              <DialogTrigger asChild><Button variant="destructive"><AlertTriangle className="w-4 h-4 mr-2" />{t('eq_report_faulty')}</Button></DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>Report Faulty Equipment</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{t('eq_report_faulty_title')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
-                  <div><Label>Equipment</Label>
+                  <div><Label>{t('eq_tab_list')}</Label>
                     <Select value={faultForm.equipmentId} onValueChange={(v) => setFaultForm({ ...faultForm, equipmentId: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t('eq_select')} /></SelectTrigger>
                       <SelectContent>{equipment.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
-                  <div><Label>Severity</Label>
+                  <div><Label>{t('eq_severity')}</Label>
                     <Select value={faultForm.severity as string} onValueChange={(v) => setFaultForm({ ...faultForm, severity: v as any })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="low">{t('eq_severity_low')}</SelectItem>
+                        <SelectItem value="medium">{t('eq_severity_medium')}</SelectItem>
+                        <SelectItem value="high">{t('eq_severity_high')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div><Label>Description</Label><Textarea value={faultForm.description || ''} onChange={(e) => setFaultForm({ ...faultForm, description: e.target.value })} /></div>
-                  <Button className="w-full" variant="destructive" onClick={reportFaulty}>Submit Report</Button>
+                  <div><Label>{t('eq_description')}</Label><Textarea value={faultForm.description || ''} onChange={(e) => setFaultForm({ ...faultForm, description: e.target.value })} /></div>
+                  <Button className="w-full" variant="destructive" onClick={reportFaulty}>{t('eq_submit_report')}</Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -256,7 +265,7 @@ export default function EquipmentPage() {
           <Card>
             <CardContent className="pt-6">
               <Table>
-                <TableHeader><TableRow><TableHead>Equipment</TableHead><TableHead>Reported By</TableHead><TableHead>Date</TableHead><TableHead>Severity</TableHead><TableHead>Description</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>{t('eq_tab_list')}</TableHead><TableHead>{t('eq_reported_by')}</TableHead><TableHead>{t('eq_date')}</TableHead><TableHead>{t('eq_severity')}</TableHead><TableHead>{t('eq_description')}</TableHead><TableHead>{t('eq_status')}</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {faulty.map((f) => (
                     <TableRow key={f.id}>
