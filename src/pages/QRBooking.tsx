@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CalendarDays, Clock, User, Phone, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function QRBooking() {
   const [doctors, setDoctors] = useState<Array<{ id: string; firstName: string; lastName: string; specialization: string }>>([]);
