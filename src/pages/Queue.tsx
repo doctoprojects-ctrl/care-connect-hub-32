@@ -23,6 +23,7 @@ import { ExternalLink, PhoneCall, SkipForward, CheckCircle2, UserPlus } from 'lu
 import { Link } from 'react-router-dom';
 import { BarcodeScanner } from '@/components/common/BarcodeScanner';
 import { QrCode, ScanLine, Search } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const DEPT_LABELS: Record<QueueDept, string> = {
   doctor: 'Doctor',
@@ -104,7 +105,7 @@ export default function Queue() {
     return s;
   };
 
-  const performLookup = (raw: string) => {
+  const performLookup = async (raw: string) => {
     const trimmed = raw.trim();
     // If a booking URL was scanned, redirect straight to self-booking.
     if (/\/book(\?|$|\/)/i.test(trimmed) || /^https?:\/\//i.test(trimmed) && trimmed.includes('/book')) {
@@ -118,6 +119,31 @@ export default function Queue() {
         }
         return;
       } catch { /* fall through */ }
+    }
+    // APP-XXXXXX booking code (from QR self-booking) — match by ID prefix in Supabase
+    const appMatch = trimmed.match(/^APP-([A-Za-z0-9]{6})$/i);
+    if (appMatch) {
+      const prefix = appMatch[1].toLowerCase();
+      const { data: appts } = await supabase
+        .from('appointments')
+        .select('id, appointment_date, appointment_time, patient_id, patients(first_name, last_name)')
+        .limit(200);
+      const found = (appts ?? []).find((a: any) => String(a.id).slice(0, 6).toLowerCase() === prefix);
+      if (found) {
+        const name = `${(found as any).patients?.first_name ?? ''} ${(found as any).patients?.last_name ?? ''}`.trim() || 'Patient';
+        setLookupResult({
+          ok: true,
+          patientId: (found as any).patient_id,
+          patientName: name,
+          appointmentId: (found as any).id,
+          appointmentTime: `${(found as any).appointment_date} ${((found as any).appointment_time || '').slice(0,5)}`.trim(),
+        });
+        toast({ title: `Appointment ${trimmed.toUpperCase()}`, description: name });
+        return;
+      }
+      setLookupResult({ ok: false, message: `No booking found for "${trimmed}"` });
+      toast({ title: 'Booking not found', description: trimmed, variant: 'destructive' });
+      return;
     }
     // Google Sheet appointment number match (exact ID)
     const sheetMatch = sheetAppointments.find(
