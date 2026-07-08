@@ -346,7 +346,7 @@ export default function Queue() {
                   <Input
                     value={lookupCode}
                     onChange={(e) => setLookupCode(e.target.value)}
-                    placeholder="Patient number or QR text (e.g. p-001 / MPMS-P:p-001)"
+                   placeholder="Booking # (APP-XXXXXX), patient number, or QR text"
                     autoFocus
                   />
                   <Button type="submit" variant="outline">
@@ -354,10 +354,10 @@ export default function Queue() {
                   </Button>
                 </form>
 
-                <p className="text-xs text-muted-foreground">
-                  Tip: Enter the <strong>appointment number</strong> (ID from the Google Sheet), a patient number,
-                  or scan a QR (<code>MPMS-P:&lt;patientId&gt;</code> or booking URL).
-                </p>
+                 <p className="text-xs text-muted-foreground">
+                   Tip: Scan the QR from the patient's booking confirmation, or type the <strong>APP-XXXXXX</strong>
+                   number. Also accepts sheet appointment IDs and <code>MPMS-P:&lt;patientId&gt;</code>.
+                 </p>
               </CardContent>
             </Card>
 
