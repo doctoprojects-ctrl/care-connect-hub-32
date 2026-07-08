@@ -17,7 +17,7 @@ import { toast } from '@/hooks/use-toast';
 import { Plus, ScanLine, Trash2, Printer, Pill, CheckCircle2, DollarSign } from 'lucide-react';
 import { usePrescriptions, markPrescriptionPaid, dispensePrescription, cancelPrescription } from '@/lib/prescriptionsStore';
 import { useT } from '@/contexts/LanguageContext';
-import { getClinicConfig } from '@/lib/clinicConfig';
+import { getClinicConfig, money } from '@/lib/clinicConfig';
 
 const genBarcode = () => '6' + Math.floor(100000000000 + Math.random() * 899999999999).toString();
 
