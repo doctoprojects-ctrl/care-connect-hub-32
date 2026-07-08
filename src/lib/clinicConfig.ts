@@ -1,8 +1,11 @@
 // Single source of truth for clinic branding on printed docs.
-// Editable at runtime via the Settings page; persisted to localStorage.
+// Editable at runtime via the Settings page; persisted to Supabase (shared)
+// with a localStorage cache for instant offline reads.
 import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'app.clinicConfig';
+const REMOTE_KEY = 'clinic';
 
 export type ClinicConfig = {
   name: string;
@@ -38,12 +41,32 @@ const read = (): ClinicConfig => {
   }
 };
 
+let remoteLoaded = false;
+const writeLocal = (c: ClinicConfig) => {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
+  window.dispatchEvent(new CustomEvent('clinic-config-changed'));
+};
+
+export const loadClinicConfigFromRemote = async () => {
+  if (remoteLoaded) return;
+  remoteLoaded = true;
+  try {
+    const { data } = await (supabase as any)
+      .from('app_settings').select('value').eq('key', REMOTE_KEY).maybeSingle();
+    if (data?.value) writeLocal({ ...defaults, ...(data.value as any) });
+  } catch {}
+};
+
 export const getClinicConfig = (): ClinicConfig => read();
 
 export const saveClinicConfig = (c: Partial<ClinicConfig>) => {
   const merged = { ...read(), ...c };
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-  window.dispatchEvent(new CustomEvent('clinic-config-changed'));
+  writeLocal(merged);
+  // Best-effort remote sync so every device/user sees the same values.
+  (supabase as any)
+    .from('app_settings')
+    .upsert({ key: REMOTE_KEY, value: merged, updated_at: new Date().toISOString() })
+    .then(() => {}, () => {});
 };
 
 // Live proxy so existing `clinicConfig.name` call sites keep working
