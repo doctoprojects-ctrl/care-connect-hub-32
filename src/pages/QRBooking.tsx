@@ -114,12 +114,22 @@ export default function QRBooking() {
               <p className="text-sm">
                 {confirmation.date} at {confirmation.time}
               </p>
+              <div className="flex justify-center py-3">
+                <div className="bg-white p-3 rounded-md inline-block">
+                  <QRCodeSVG value={confirmation.code} size={168} level="M" includeMargin={false} />
+                </div>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Please save this number and present it at reception on arrival to be added to the queue.
+                Save or screenshot this QR code and your number. Present either at reception on arrival to check in.
               </p>
-              <Button variant="outline" size="sm" onClick={() => setConfirmation(null)}>
-                Book another
-              </Button>
+              <div className="flex gap-2 justify-center pt-2">
+                <Button variant="outline" size="sm" onClick={() => window.print()}>
+                  Print / Save
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setConfirmation(null)}>
+                  Book another
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
