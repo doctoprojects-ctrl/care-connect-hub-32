@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
+import { loadClinicConfigFromRemote } from '@/lib/clinicConfig';
 import {
   mockPatients,
   mockDoctors,
@@ -192,6 +193,7 @@ export async function upsertInvoiceDb(inv: Invoice) {
 export function useSupabaseBootstrap() {
   useEffect(() => {
     hydrateAll();
+    loadClinicConfigFromRemote();
     const ch = supabase
       .channel('appointments_rt')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {

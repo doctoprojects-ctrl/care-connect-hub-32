@@ -62,7 +62,7 @@ export default function Invoices() {
     setInvoices((p) => p.map((i) => (i.id === updated.id ? updated : i)));
     const idx = mockInvoices.findIndex((i) => i.id === updated.id);
     if (idx !== -1) mockInvoices[idx] = updated;
-    toast({ title: 'Payment recorded', description: `${updated.invoiceNumber} — $${updated.total} (${payMethod}) at ${stationLabel}` });
+    toast({ title: 'Payment recorded', description: `${updated.invoiceNumber} — ${money(updated.total)} (${payMethod}) at ${stationLabel}` });
     setPayInv(null);
     setPayMethod('cash');
   };
@@ -90,7 +90,7 @@ export default function Invoices() {
                 <Label>{t('add_service')}</Label>
                 <Select value="" onValueChange={addLine}>
                   <SelectTrigger><SelectValue placeholder={t('choose_service')} /></SelectTrigger>
-                  <SelectContent>{mockServicePrices.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} - ${s.price}</SelectItem>)}</SelectContent>
+                  <SelectContent>{mockServicePrices.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} - {money(s.price)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
@@ -98,12 +98,12 @@ export default function Invoices() {
                   <div key={i} className="flex items-center gap-2">
                     <span className="flex-1 text-sm">{l.description}</span>
                     <Input className="w-20" type="number" value={l.quantity} onChange={(e) => setLines((p) => p.map((x, idx) => idx === i ? { ...x, quantity: Number(e.target.value) } : x))} />
-                    <span className="text-sm w-20 text-right">${(l.quantity * l.unitPrice).toFixed(2)}</span>
+                    <span className="text-sm w-20 text-right">{money(l.quantity * l.unitPrice)}</span>
                     <Button size="icon" variant="ghost" onClick={() => setLines((p) => p.filter((_, idx) => idx !== i))}><Trash2 className="w-4 h-4" /></Button>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between font-bold pt-2 border-t"><span>{t('total')}</span><span>${total.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold pt-2 border-t"><span>{t('total')}</span><span>{money(total)}</span></div>
               <Button className="w-full" onClick={create} disabled={!patientId || lines.length === 0}>{t('create_invoice')}</Button>
             </div>
           </DialogContent>
@@ -120,7 +120,7 @@ export default function Invoices() {
                   <TableCell className="font-mono">{i.invoiceNumber}</TableCell>
                   <TableCell>{i.patientName}</TableCell>
                   <TableCell>{i.issuedDate}</TableCell>
-                  <TableCell>${i.total.toFixed(2)}</TableCell>
+                  <TableCell>{money(i.total)}</TableCell>
                   <TableCell><Badge variant={i.status === 'paid' ? 'default' : 'destructive'} className="capitalize">{i.status}</Badge></TableCell>
                   <TableCell className="space-x-2">
                     {i.status !== 'paid' && (
@@ -149,7 +149,7 @@ export default function Invoices() {
               <div className="text-sm">
                 <div><strong>{t('invoice_no')}:</strong> {payInv.invoiceNumber}</div>
                 <div><strong>{t('patient')}:</strong> {payInv.patientName}</div>
-                <div className="text-lg pt-2"><strong>{t('amount_due')}:</strong> ${payInv.total.toFixed(2)}</div>
+                <div className="text-lg pt-2"><strong>{t('amount_due')}:</strong> {money(payInv.total)}</div>
               </div>
               <div>
                 <Label>{t('payment_method')}</Label>

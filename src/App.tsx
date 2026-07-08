@@ -10,6 +10,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PINLogin } from "@/components/auth/PINLogin";
 import { useSupabaseBootstrap } from "@/lib/supabaseSync";
 import Dashboard from "./pages/Dashboard";
+import { Navigate } from "react-router-dom";
 import Patients from "./pages/Patients";
 import PatientDetail from "./pages/PatientDetail";
 import Appointments from "./pages/Appointments";
@@ -35,6 +36,15 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const roleHome: Record<string, string> = {
+  admin: '/dashboard',
+  doctor: '/queue',
+  reception: '/appointments',
+  cashier: '/pharmacy',
+  supervisor: '/reports',
+  marketing: '/ads',
+};
+
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
   useSupabaseBootstrap();
@@ -43,6 +53,8 @@ const AppContent = () => {
     return <PINLogin />;
   }
 
+  const home = roleHome[user?.role || 'admin'] || '/dashboard';
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar currentUser={user!} />
@@ -50,7 +62,7 @@ const AppContent = () => {
         <Header currentUser={user!} />
         <main className="flex-1 p-6">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Navigate to={home} replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/patients" element={<Patients />} />
             <Route path="/patients/:id" element={<PatientDetail />} />

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import { mockInvoices } from '@/store/mockData';
 import { useT } from '@/contexts/LanguageContext';
+import { money } from '@/lib/clinicConfig';
 
 export default function PatientCredits() {
   const t = useT();
@@ -34,7 +35,7 @@ export default function PatientCredits() {
       <Card>
         <CardHeader className="pb-2">
           <CardDescription>{t('total_outstanding')}</CardDescription>
-          <CardTitle className="text-3xl text-destructive">${totalOutstanding.toFixed(2)}</CardTitle>
+          <CardTitle className="text-3xl text-destructive">{money(totalOutstanding)}</CardTitle>
         </CardHeader>
       </Card>
 
@@ -48,7 +49,7 @@ export default function PatientCredits() {
                 <TableRow key={r.patientId}>
                   <TableCell>{r.patientName}</TableCell>
                   <TableCell>{r.invoices}</TableCell>
-                  <TableCell className="text-right font-semibold">${r.balance.toFixed(2)}</TableCell>
+                  <TableCell className="text-right font-semibold">{money(r.balance)}</TableCell>
                   <TableCell><Badge variant="destructive">{t('owing')}</Badge></TableCell>
                 </TableRow>
               ))}

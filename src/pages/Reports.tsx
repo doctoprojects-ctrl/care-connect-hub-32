@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import { mockSales, mockInvoices, mockPatients, mockAppointments, mockCashUps, mockConsultations } from '@/store/mockData';
 import { useT } from '@/contexts/LanguageContext';
+import { money } from '@/lib/clinicConfig';
 
 export default function Reports() {
   const t = useT();
@@ -31,10 +32,10 @@ export default function Reports() {
 
         <TabsContent value="financial" className="space-y-4">
           <div className="grid md:grid-cols-4 gap-4">
-            <Card><CardHeader className="pb-2"><CardDescription>{t('pharmacy_sales')}</CardDescription><CardTitle className="text-2xl">${totalSales.toFixed(2)}</CardTitle></CardHeader></Card>
-            <Card><CardHeader className="pb-2"><CardDescription>{t('invoiced')}</CardDescription><CardTitle className="text-2xl">${totalInvoiced.toFixed(2)}</CardTitle></CardHeader></Card>
-            <Card><CardHeader className="pb-2"><CardDescription>{t('collected')}</CardDescription><CardTitle className="text-2xl text-green-600">${totalPaid.toFixed(2)}</CardTitle></CardHeader></Card>
-            <Card><CardHeader className="pb-2"><CardDescription>{t('outstanding')}</CardDescription><CardTitle className="text-2xl text-destructive">${outstanding.toFixed(2)}</CardTitle></CardHeader></Card>
+            <Card><CardHeader className="pb-2"><CardDescription>{t('pharmacy_sales')}</CardDescription><CardTitle className="text-2xl">{money(totalSales)}</CardTitle></CardHeader></Card>
+            <Card><CardHeader className="pb-2"><CardDescription>{t('invoiced')}</CardDescription><CardTitle className="text-2xl">{money(totalInvoiced)}</CardTitle></CardHeader></Card>
+            <Card><CardHeader className="pb-2"><CardDescription>{t('collected')}</CardDescription><CardTitle className="text-2xl text-green-600">{money(totalPaid)}</CardTitle></CardHeader></Card>
+            <Card><CardHeader className="pb-2"><CardDescription>{t('outstanding')}</CardDescription><CardTitle className="text-2xl text-destructive">{money(outstanding)}</CardTitle></CardHeader></Card>
           </div>
 
           <Card>
@@ -46,7 +47,7 @@ export default function Reports() {
                   {mockCashUps.map((c) => {
                     const exp = c.expectedCash + c.expectedCard + c.expectedMobile;
                     const cnt = c.countedCash + c.countedCard + c.countedMobile;
-                    return <TableRow key={c.id}><TableCell>{c.shiftNumber}</TableCell><TableCell>{c.cashierName}</TableCell><TableCell>${exp.toFixed(2)}</TableCell><TableCell>${cnt.toFixed(2)}</TableCell><TableCell>${c.variance.toFixed(2)}</TableCell></TableRow>;
+                    return <TableRow key={c.id}><TableCell>{c.shiftNumber}</TableCell><TableCell>{c.cashierName}</TableCell><TableCell>{money(exp)}</TableCell><TableCell>{money(cnt)}</TableCell><TableCell>{money(c.variance)}</TableCell></TableRow>;
                   })}
                 </TableBody>
               </Table>
