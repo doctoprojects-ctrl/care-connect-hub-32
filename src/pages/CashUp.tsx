@@ -10,6 +10,7 @@ import { CashUp as CashUpType } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useT } from '@/contexts/LanguageContext';
+import { money } from '@/lib/clinicConfig';
 
 export default function CashUp() {
   const { user } = useAuth();
@@ -76,7 +77,7 @@ export default function CashUp() {
               {(['cash', 'card', 'mobile'] as const).map((m) => (
                 <Fragment key={m}>
                   <div className="capitalize self-center">{m}</div>
-                  <div className="self-center">${(expected as any)[m].toFixed(2)}</div>
+                  <div className="self-center">{money((expected as any)[m])}</div>
                   <Input type="number" value={m === 'cash' ? countedCash : m === 'card' ? countedCard : countedMobile}
                     onChange={(e) => {
                       const v = Number(e.target.value);
@@ -88,7 +89,7 @@ export default function CashUp() {
               ))}
             </div>
             <div className={`p-3 rounded text-center font-semibold ${variance === 0 ? 'bg-green-500/10 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
-              {t('variance')}: ${variance.toFixed(2)}
+              {t('variance')}: {money(variance)}
             </div>
             <div>
               <Label>{t('notes')}</Label>
@@ -108,7 +109,7 @@ export default function CashUp() {
               <TableBody>
                 {todaysSales.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t('no_sales_today')}</TableCell></TableRow>}
                 {todaysSales.map((s) => (
-                  <TableRow key={s.id}><TableCell className="font-mono">{s.receiptNumber}</TableCell><TableCell className="capitalize">{s.paymentMethod}</TableCell><TableCell>${s.total.toFixed(2)}</TableCell></TableRow>
+                  <TableRow key={s.id}><TableCell className="font-mono">{s.receiptNumber}</TableCell><TableCell className="capitalize">{s.paymentMethod}</TableCell><TableCell>{money(s.total)}</TableCell></TableRow>
                 ))}
               </TableBody>
             </Table>
@@ -130,9 +131,9 @@ export default function CashUp() {
                     <TableCell className="font-mono">{c.shiftNumber}</TableCell>
                     <TableCell>{c.cashierName}</TableCell>
                     <TableCell>{new Date(c.closedAt).toLocaleString()}</TableCell>
-                    <TableCell>${exp.toFixed(2)}</TableCell>
-                    <TableCell>${cnt.toFixed(2)}</TableCell>
-                    <TableCell><Badge variant={c.variance === 0 ? 'default' : 'destructive'}>${c.variance.toFixed(2)}</Badge></TableCell>
+                    <TableCell>{money(exp)}</TableCell>
+                    <TableCell>{money(cnt)}</TableCell>
+                    <TableCell><Badge variant={c.variance === 0 ? 'default' : 'destructive'}>{money(c.variance)}</Badge></TableCell>
                   </TableRow>
                 );
               })}
