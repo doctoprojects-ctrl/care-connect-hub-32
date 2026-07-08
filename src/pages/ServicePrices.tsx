@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useT } from '@/contexts/LanguageContext';
+import { money } from '@/lib/clinicConfig';
 
 export default function ServicePrices() {
   const { user } = useAuth();
@@ -64,7 +65,7 @@ export default function ServicePrices() {
                   <TableCell className="font-mono">{s.code}</TableCell>
                   <TableCell>{s.name}{s.description && <div className="text-xs text-muted-foreground">{s.description}</div>}</TableCell>
                   <TableCell>{s.category}</TableCell>
-                  <TableCell className="text-right font-semibold">${s.price.toFixed(2)}</TableCell>
+                  <TableCell className="text-right font-semibold">{money(s.price)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
