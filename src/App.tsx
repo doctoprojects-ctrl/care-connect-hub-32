@@ -63,9 +63,7 @@ const AppContent = () => {
         <main className="flex-1 p-6">
           <Routes>
             <Route path="/" element={<Navigate to={home} replace />} />
-            {(user?.role === 'admin') && (
-              <Route path="/dashboard" element={<Dashboard />} />
-            )}
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/patients" element={<Patients />} />
             <Route path="/patients/:id" element={<PatientDetail />} />
             <Route path="/appointments" element={<Appointments />} />
