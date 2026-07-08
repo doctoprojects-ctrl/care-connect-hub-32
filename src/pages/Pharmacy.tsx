@@ -116,7 +116,7 @@ export default function Pharmacy() {
       return line ? { ...it, stock: Math.max(0, it.stock - line.quantity) } : it;
     }));
     setCart([]);
-    toast({ title: 'Sale complete', description: `${sale.receiptNumber} - $${sale.total.toFixed(2)}` });
+    toast({ title: 'Sale complete', description: `${sale.receiptNumber} - ${money(sale.total)}` });
   };
 
   // GRV
@@ -204,7 +204,7 @@ export default function Pharmacy() {
                   {items.map((it) => (
                     <Button key={it.id} variant="outline" className="h-auto py-3 flex-col items-start" onClick={() => addItemToCart(it)}>
                       <span className="font-medium text-sm">{it.name}</span>
-                      <span className="text-xs text-muted-foreground">${it.unitPrice.toFixed(2)} · stock {it.stock}</span>
+                      <span className="text-xs text-muted-foreground">{money(it.unitPrice)} · stock {it.stock}</span>
                     </Button>
                   ))}
                 </div>
@@ -226,17 +226,17 @@ export default function Pharmacy() {
                     <div key={l.itemId} className="flex items-center justify-between border-b pb-2">
                       <div className="text-sm">
                         <div>{l.name}</div>
-                        <div className="text-xs text-muted-foreground">{l.quantity} × ${l.unitPrice.toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">{l.quantity} × {money(l.unitPrice)}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">${(l.quantity * l.unitPrice).toFixed(2)}</span>
+                        <span className="text-sm font-medium">{money(l.quantity * l.unitPrice)}</span>
                         <Button size="icon" variant="ghost" onClick={() => setCart((p) => p.filter((c) => c.itemId !== l.itemId))}><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </div>
                   ))}
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                  <span>{t('pharm_total')}</span><span>${cartTotal.toFixed(2)}</span>
+                  <span>{t('pharm_total')}</span><span>{money(cartTotal)}</span>
                 </div>
                 <Select value={payMethod} onValueChange={(v: any) => setPayMethod(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -272,7 +272,7 @@ export default function Pharmacy() {
                       <div className="flex items-center gap-2">
                         <Badge variant={rx.status === 'dispensed' ? 'default' : rx.status === 'cancelled' ? 'secondary' : 'outline'}>{rx.status}</Badge>
                         <Badge variant={rx.paid ? 'default' : 'destructive'}>{rx.paid ? t('pharm_paid') : t('pharm_unpaid')}</Badge>
-                        <span className="text-sm font-semibold">${rx.total.toFixed(2)}</span>
+                        <span className="text-sm font-semibold">{money(rx.total)}</span>
                       </div>
                     </div>
                     <Table>
@@ -282,7 +282,7 @@ export default function Pharmacy() {
                           <TableRow key={i}>
                             <TableCell>{it.name}</TableCell>
                             <TableCell>{it.quantity}</TableCell>
-                            <TableCell>{it.unitPrice ? `$${Number(it.unitPrice).toFixed(2)}` : '—'}</TableCell>
+                            <TableCell>{it.unitPrice ? money(Number(it.unitPrice)) : '—'}</TableCell>
                             <TableCell className="text-muted-foreground text-sm">{it.instructions || ''}</TableCell>
                           </TableRow>
                         ))}
@@ -366,7 +366,7 @@ export default function Pharmacy() {
                       <TableCell className="font-medium">{it.name}</TableCell>
                       <TableCell className="font-mono text-xs">{it.barcode}</TableCell>
                       <TableCell>{it.category}</TableCell>
-                      <TableCell>${it.unitPrice.toFixed(2)}</TableCell>
+                      <TableCell>{money(it.unitPrice)}</TableCell>
                       <TableCell>
                         {it.stock} {it.stock <= it.reorderLevel && <Badge variant="destructive" className="ml-1">Low</Badge>}
                       </TableCell>
@@ -496,7 +496,7 @@ export default function Pharmacy() {
                       <TableCell className="font-mono">{s.receiptNumber}</TableCell>
                       <TableCell>{s.customerName}</TableCell>
                       <TableCell>{s.lines.length}</TableCell>
-                      <TableCell>${s.total.toFixed(2)}</TableCell>
+                      <TableCell>{money(s.total)}</TableCell>
                       <TableCell><Badge variant="outline">{s.paymentMethod}</Badge></TableCell>
                       <TableCell>{new Date(s.createdAt).toLocaleString()}</TableCell>
                     </TableRow>
